@@ -1,0 +1,16 @@
+{
+    "KPlugin": {
+        "Id": "round-safe-area",
+        "Name": "Round screen safe area",
+        "Name[fr]": "Zone sûre écran rond",
+        "Description": "Keeps windows inside the visible square of a round display (Android-like fullscreen apps).",
+        "Description[fr]": "Garde les fenêtres dans le carré visible d'un écran rond (applis plein écran façon Android).",
+        "Authors": [{ "Name": "softyoda" }],
+        "License": "GPL-2.0-or-later",
+        "Version": "1.0"
+    },
+    "X-Plasma-API": "javascript",
+    "X-Plasma-MainScript": "code/main.js",
+    "KPackageStructure": "KWin/Script",
+    "X-KDE-ConfigModule": "kwin/effects/configs/kcm_kwin4_genericscripted"
+}

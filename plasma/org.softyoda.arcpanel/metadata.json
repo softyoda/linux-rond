@@ -1,0 +1,16 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Id": "org.softyoda.arcpanel",
+        "Name": "Arc panel (round screen)",
+        "Name[fr]": "Barre en arc (écran rond)",
+        "Description": "Panel containment that lays out widgets and open apps along the edge of a round display.",
+        "Description[fr]": "Barre qui dispose les widgets et les applis ouvertes le long du bord d'un écran rond.",
+        "Authors": [{ "Name": "softyoda" }],
+        "License": "GPL-2.0-or-later",
+        "Version": "0.1",
+        "Icon": "view-circular"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-ContainmentType": "Panel"
+}

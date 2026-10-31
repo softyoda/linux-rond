@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0">
+  <kcfgfile name=""/>
+  <group name="">
+    <entry name="OutputName" type="String"><default></default></entry>
+    <entry name="Inset" type="Double"><default>0.7071</default></entry>
+    <entry name="AndroidMode" type="Bool"><default>true</default></entry>
+    <entry name="ConstrainFullscreen" type="Bool"><default>false</default></entry>
+  </group>
+</kcfg>
