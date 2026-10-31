@@ -1,0 +1,9 @@
+{
+  "KPlugin": {
+    "Name": "Linux Rond — touch to wake",
+    "Description": "Wake sleeping displays with one touchscreen tap, without unlocking the session.",
+    "License": "GPL-2.0-or-later",
+    "EnabledByDefault": false,
+    "Version": "0.1.0"
+  }
+}

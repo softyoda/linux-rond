@@ -43,6 +43,31 @@ Vérification : `./scripts/check.sh`. Pour restaurer les panneaux, passer le che
 indiqué lors de la configuration à `./scripts/restore-panels.sh /chemin/sauvegarde`.
 Cela restaure la disposition Plasma complète sauvegardée et désactive la zone sûre.
 
+## Réveil de l’écran au premier toucher (optionnel)
+
+KWin attend normalement un double-toucher pour sortir de la veille d’affichage
+([implémentation KWin](https://github.com/KDE/kwin/blob/master/src/dpmsinputeventfilter.cpp)).
+Le module natif `kwin/touch-wakeup` permet de réveiller l’écran avec un seul toucher,
+au relâchement du dernier doigt. Il ne déverrouille pas la session, ne simule aucun clic
+et ne modifie pas la durée avant mise en veille. Il ne réveille pas un ordinateur suspendu.
+
+```sh
+./scripts/install-touch-wakeup.sh
+# Revenir au comportement natif :
+./scripts/disable-touch-wakeup.sh
+```
+
+Prérequis supplémentaires : compilateur C++23, CMake, fichiers de développement de KWin
+et Qt/KF correspondant à la version installée. Compilation et chargement à chaud testés
+avec **KWin 6.8.1**. L’installation reste dans le compte utilisateur et crée une entrée
+KDE Autostart. Aucun accès direct à `/dev/input` ni modification système n’est nécessaire.
+
+Après une mise à jour de KWin, relancer l’installateur pour recompiler le module :
+le chargeur refuse un binaire compilé pour une autre version. Les tests de logique
+couvrent le simple toucher, le multitouch et les relâchements inattendus ; la validation
+physique sur chaque écran reste nécessaire. Le réveil au simple toucher a été confirmé
+sur l’écran cible avec KWin 6.8.1 le 31 octobre 2026.
+
 ## Suite du projet
 
 Voir [la feuille de route](docs/ROADMAP.md) pour le mode rond par application,
