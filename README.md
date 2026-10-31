@@ -37,6 +37,8 @@ En cas de plusieurs sorties carrées, elle refuse de choisir arbitrairement.
 L’échelle de l’écran se règle dans Configuration du système → Affichage.
 Le projet ne force pas une échelle ni un nom de sortie propre à une machine.
 
+Aperçu d’une capture locale (Pillow requis) : `python3 tools/preview.py capture.png aperçu.png`.
+
 Vérification : `./scripts/check.sh`. Pour restaurer les panneaux, passer le chemin
 indiqué lors de la configuration à `./scripts/restore-panels.sh /chemin/sauvegarde`.
 Cela restaure la disposition Plasma complète sauvegardée et désactive la zone sûre.
