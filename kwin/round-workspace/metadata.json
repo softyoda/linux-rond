@@ -1,0 +1,9 @@
+{
+  "KPlugin": {
+    "Name": "Linux Rond Workspace",
+    "Description": "Experimental fixed-window projection and touch workspace for circular displays.",
+    "License": "GPL-2.0-or-later",
+    "EnabledByDefault": false,
+    "Version": "0.2.0"
+  }
+}

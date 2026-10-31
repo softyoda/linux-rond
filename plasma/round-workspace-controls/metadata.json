@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Id": "org.softyoda.roundworkspacecontrols",
+        "Name": "Round workspace controls",
+        "Name[fr]": "Commandes du bureau rond",
+        "Description": "Window controls and overview for Linux Rond.",
+        "Authors": [{ "Name": "softyoda" }],
+        "License": "GPL-2.0-or-later",
+        "Version": "0.1.0",
+        "Icon": "view-grid"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-for tool in kpackagetool6 kwriteconfig6 qdbus6; do command -v "$tool" >/dev/null; done
+for tool in kpackagetool6 kwriteconfig6 qdbus6 python3; do command -v "$tool" >/dev/null; done
 qdbus6 org.kde.KWin /KWin supportInformation >/dev/null
 install_package() {
     local type=$1 source=$2 destination=$3
@@ -13,6 +13,11 @@ install_package() {
 }
 install_package Plasma/Applet "$root/plasma/org.softyoda.arcpanel" "${XDG_DATA_HOME:-$HOME/.local/share}/plasma/plasmoids/org.softyoda.arcpanel"
 install_package KWin/Script "$root/kwin/round-safe-area" "${XDG_DATA_HOME:-$HOME/.local/share}/kwin/scripts/round-safe-area"
+# Do not start a second geometry manager over the native workspace.
+if qdbus6 org.kde.KWin /LinuxRond org.softyoda.LinuxRond.StateJson 2>/dev/null | python3 -c 'import json,sys; sys.exit(0 if json.load(sys.stdin).get("enabled") else 1)' 2>/dev/null; then
+    printf '%s\n' 'Packages updated; the native workspace still manages window geometry.'
+    exit 0
+fi
 kwriteconfig6 --file kwinrc --group Plugins --key round-safe-areaEnabled true
 qdbus6 org.kde.KWin /Scripting org.kde.kwin.Scripting.unloadScript round-safe-area >/dev/null 2>&1 || true
 qdbus6 org.kde.KWin /KWin reconfigure

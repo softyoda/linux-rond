@@ -2,13 +2,14 @@
 
 Status as of October 31, 2026. Native workspace development is underway in three
 parallel workstreams: rendering/window management, input mapping, and overview/split UX.
-Unchecked features remain unvalidated; the full interactive mode is not installed.
+The experimental workspace is installed on the target at the user’s request.
+Unchecked items still need final user or compatibility validation; see [the validation tracker](VALIDATION.md).
 
 ## Completed
 
 - [x] Arc panels, tilted icons, and curved task indicators.
 - [x] Safe-area window placement on the circular display.
-- [x] Visually approved M5 square-to-disk mesh and geometric checks.
+- [x] Visually approved M5-A square-to-disk mesh and geometric checks.
 - [x] Standalone public repository; dotfiles reduced to a pinned installer.
 - [x] Single-tap display wakeup, user installation, and autostart; physically confirmed on KWin 6.8.1.
 - [x] English source documentation and concise code comments.
@@ -26,7 +27,8 @@ Unchecked features remain unvalidated; the full interactive mode is not installe
 
 Depends on live projection and input.
 
-- [ ] Move minimize, square/circle toggle, and close controls into the top arc, after brightness.
+- [ ] Keep minimize, square/circle toggle, and close controls outside app content, in the top OS arc.
+- [ ] Show separate left/right controls and curved app titles beside the clock in split-screen.
 - [ ] Make the maximize action switch between square and circular projection.
 - [ ] Persist the mode by application ID across new windows and restarts.
 - [ ] Disable free window movement and resizing in this mode.
@@ -50,16 +52,16 @@ Depends on the overview and transformed input.
 - [ ] Drag an overview preview left or right to place it in that half of the display.
 - [ ] Show the remaining previews in the opposite half to select the second window.
 - [ ] Display both apps in complementary half-disks with matching input coordinates.
+- [ ] Use vertical canvases during split-screen to preserve text proportions; restore square canvases afterward.
 - [ ] Support leaving split-screen and restoring each app's saved mode.
 
 ## Reference and validation
 
-The approved M5 mesh has 49 × 49 vertices and 48 × 48 faces. Area, stretch, and curvature
-were regularized together; uniform texel density alone does not ensure legible text.
+The approved M5-A mesh has 49 × 49 vertices and 48 × 48 faces. Area, stretch, and curvature
+were regularized together, with extra corner protection; uniform texel density alone does not ensure legible text.
 `projection/approved-mesh.*` remains the geometry reference.
 
-KWin 6.8.1 and 6.8.2 APIs have been inspected. Rendering and input extension work has not
-yet been implemented. Binary extensions must match the installed KWin version.
+KWin 6.8.1 and 6.8.2 APIs have been inspected. Rendering and input extensions are implemented and integration-tested. Binary extensions must match the installed KWin version.
 
 - [ ] Test rendering/input round trips on mesh edges and interiors; reject folds and holes.
 - [ ] Keep input handling behind session-lock protections.

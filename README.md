@@ -7,7 +7,7 @@ inside the visible area, and a single tap wakes the screen. It is built for smal
 monitors, embedded displays, and custom Linux devices where a rectangular desktop wastes space.
 
 ![Square application content mapped onto the approved circular projection](docs/images/projection-preview.png)
-*Projection study using synthetic content. Live window projection is under development.*
+*Projection study using synthetic content. The native workspace is experimental.*
 
 ## What it does
 
@@ -17,13 +17,13 @@ monitors, embedded displays, and custom Linux devices where a rectangular deskto
 | Tilted icons and curved window-state indicators | Available |
 | Safe square window placement inside the display | Available |
 | Wake the display with one touch | Available; tested on KWin 6.8.1 |
-| Balanced square-to-circle projection | Mesh approved; live integration in progress |
-| Matching mouse and touch coordinates after projection | In development |
-| Saved square/circular mode for each application | In development |
-| Touch-friendly window overview with packed bubbles | In development |
-| Drag-to-split workspace with two half-disks | In development |
+| Balanced square-to-circle projection | Experimental native KWin effect |
+| Matching mouse and touch coordinates after projection | Experimental; integration-tested |
+| Saved square/circular mode for each application | Experimental; new-process persistence tested |
+| Touch-friendly window overview with packed bubbles | Experimental; visual review ongoing |
+| Drag-to-split workspace with two half-disks | Experimental; portrait canvases |
 
-The upcoming circular mode uses the same geometry for rendering and input, with window
+The experimental circular mode uses the same geometry for rendering and input, with window
 controls in the top arc. In split-screen, each half has its own controls; leaving the
 split restores each application's saved shape. See the [roadmap](docs/ROADMAP.md).
 
@@ -65,6 +65,28 @@ To enable single-tap wakeup:
 The screen wakes after you lift your finger. The plugin does not unlock the session,
 change the idle timeout, or wake a suspended computer. It loads automatically at login;
 re-run the installer after a KWin update to rebuild it for the new version.
+
+## Experimental native workspace
+
+The native effect projects real application windows and maps pointer/touch input through
+the same geometry. Square mode has straight corners; only overview thumbnails use rounded corners.
+The optional [workspace installer](docs/WORKSPACE.md) includes version checks and rollback:
+
+```sh
+./scripts/install-workspace.sh --prepare
+# After reviewing the supported cases and limitations:
+./scripts/install-workspace.sh --enable
+./scripts/disable-workspace.sh
+```
+
+For native Firefox vertical tabs in a chosen profile:
+
+```sh
+python3 scripts/configure-firefox.py --profile /path/to/firefox/profile
+```
+
+This preserves existing `user.js` settings and writes a managed preference block.
+Firefox reads it on startup. It is independent of the workspace on/off setting.
 
 ## Check or restore
 

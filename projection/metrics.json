@@ -1,29 +1,70 @@
 {
-  "before": {
-    "energy": 0.6724467365974106,
-    "area_ratio_p05_p50_p95": [
-      0.5644484390400042,
-      1.0424098060382925,
-      1.252160845233102
-    ],
-    "stretch_ratio_p50_p95": [
-      1.327332264078123,
-      3.4374731978726114
-    ],
-    "min_determinant": 0.055797814116499034
+  "name": "M5-A",
+  "reference": {
+    "top_left": {
+      "stretch_ratio": 2.973085391229863,
+      "area": 0.550065047265865,
+      "min_scale": 0.43013356471049236,
+      "max_scale": 1.2788238175183897
+    },
+    "top_right": {
+      "stretch_ratio": 2.973085796120482,
+      "area": 0.5500649667764215,
+      "min_scale": 0.4301335039514487,
+      "max_scale": 1.2788238110335854
+    },
+    "bottom_left": {
+      "stretch_ratio": 3.346257396175063,
+      "area": 0.5022052760704078,
+      "min_scale": 0.3874012016162877,
+      "max_scale": 1.2963441361956096
+    },
+    "bottom_right": {
+      "stretch_ratio": 3.346257431320565,
+      "area": 0.5022052631348131,
+      "min_scale": 0.38740119459260464,
+      "max_scale": 1.2963441263079676
+    },
+    "center": {
+      "stretch_ratio": 1.0000001344437166,
+      "area": 0.8256695978782628,
+      "min_scale": 0.9086635718857602,
+      "max_scale": 0.908663694049868
+    },
+    "min_face_determinant": 6.810897350153166e-05
   },
-  "after": {
-    "energy": 0.1668981360451751,
-    "area_ratio_p05_p50_p95": [
-      0.7837145817166131,
-      1.043863471839202,
-      1.061880822123637
-    ],
-    "stretch_ratio_p50_p95": [
-      1.4181571200932894,
-      2.5513349346310052
-    ],
-    "min_determinant": 0.09871341203296741
+  "selected": {
+    "top_left": {
+      "stretch_ratio": 2.078289421274602,
+      "area": 0.7510588615674186,
+      "min_scale": 0.6011515535766214,
+      "max_scale": 1.2493669143810846
+    },
+    "top_right": {
+      "stretch_ratio": 2.0783601834551284,
+      "area": 0.7510634494030523,
+      "min_scale": 0.6011431557797898,
+      "max_scale": 1.2493919995292788
+    },
+    "bottom_left": {
+      "stretch_ratio": 2.1508059265428545,
+      "area": 0.696798055395538,
+      "min_scale": 0.5691842219563049,
+      "max_scale": 1.2242047978783042
+    },
+    "bottom_right": {
+      "stretch_ratio": 2.150708205501148,
+      "area": 0.6968097031067794,
+      "min_scale": 0.569201910074455,
+      "max_scale": 1.2241872185840568
+    },
+    "center": {
+      "stretch_ratio": 1.0000001344437166,
+      "area": 0.8256695978782628,
+      "min_scale": 0.9086635718857602,
+      "max_scale": 0.908663694049868
+    },
+    "min_face_determinant": 6.810897350153166e-05
   },
-  "iterations": 700
+  "method": "Local Jacobian finite differences of the bilinear mesh; runtime rendering and input use matching triangles."
 }

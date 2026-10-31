@@ -1,0 +1,9 @@
+{
+  "KPlugin": {
+    "Name": "Linux Rond user plugin path",
+    "Description": "Register the user workspace effect directory for this KWin session.",
+    "License": "GPL-2.0-or-later",
+    "EnabledByDefault": false,
+    "Version": "0.2.0"
+  }
+}

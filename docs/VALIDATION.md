@@ -1,8 +1,9 @@
 # Validation tracker
 
 Updated October 31, 2026. **Working code, automated checks, and user approval are separate statuses.**
-The experimental workspace is running in a separate demo session, not as a replacement for the main desktop.
-The live baseline remains the existing arc panels and the validated single-tap wakeup plugin.
+The user requested activation on the actual desktop. The native workspace is now installed
+in the target user session, with the previous configuration backed up and rollback available.
+The separate demonstration session has been stopped; actual application review is ongoing.
 
 ## Current review
 
@@ -19,21 +20,21 @@ corners in normal square mode; rounded corners belong only to overview thumbnail
 
 | ID | Request | Status | Evidence / next check |
 | --- | --- | --- | --- |
-| R01 | Common fixed square canvas; no free movement | Automated checks passed; sharp-square correction in progress | Native move requests are cancelled; size constraints of other apps still need testing |
-| R02 | Square ↔ circular button; fuller-corner mesh A | Toggle and circular touch behavior approved by user; exact square corners pending | [Live demo](validation/2026-10-31/01-live-circle.png) |
+| R01 | Common fixed square canvas; no free movement | Installed; exact square geometry and move cancellation tested | Native move requests are cancelled; size constraints of other apps still need testing |
+| R02 | Square ↔ circular button; fuller-corner mesh A | Toggle/touch approved in the earlier test; sharp square installed; actual-app review pending | [Live demo](validation/2026-10-31/01-live-circle.png) |
 | R03 | Mouse coordinates follow projection | Automated checks passed on Wayland/XWayland probes | [Pointer target](validation/2026-10-31/02-pointer-test.png); test actual apps next |
 | R04 | Touch coordinates follow projection | **User confirmed center and four corners**; multitouch automated | [Touch target](validation/2026-10-31/03-touch-test.png); real menus and gestures still to review |
-| R05 | Window controls outside app content; separate capsules; curved title before buttons | **In progress — latest appearance rejected** | Hide controls with no active window; move title before buttons; review next screenshot |
+| R05 | Window controls outside app content; separate capsules; curved title before buttons | Corrected using the review; actual-app visual approval pending | No empty capsule; title before individual arc-aligned buttons; review the installed result |
 | R06 | Remember shape per app across new windows/restarts | New-process persistence tested; cold session restart pending | [Reopened probe](validation/2026-10-31/07-restored-mode.png) |
 | R07 | Dense overview; equal-area square/circle previews; larger non-minimized windows | Geometry and selection tested; visual review pending | [Overview WIP](validation/2026-10-31/04-overview-wip.png); fix dark icon contrast |
 | R08 | Full half-disks with separate controls | Design approved; automated interactions passed; manual review pending | [Split WIP](validation/2026-10-31/06-split-wip.png); portrait canvases selected by user |
 | R09 | Drag to a side, then pick the other window | Automated pointer drag + touch selection passed | [Partner selection WIP](validation/2026-10-31/05-partner-wip.png); physical drag test next |
 | R10 | No wallpaper gap between content and panel backgrounds | Implemented; visual review pending | Preserve icon centering while extending panel backgrounds |
 | R11 | Notifications at top; hide empty device widget | Implemented; hardware hotplug review pending | Verify notification interaction and USB insertion/removal |
-| R12 | Dark theme, existing Wi-Fi/brightness/clock sizes, CachyOS launcher, clear overview icon | **In progress — latest dock rejected** | Keep validated baseline; fix icon contrast and centering |
+| R12 | Dark theme, existing Wi-Fi/brightness/clock sizes, CachyOS launcher, clear overview icon | Dark baseline preserved; updated icon and centering await review | Keep validated baseline; fix icon contrast and centering |
 | R13 | Wake the display with one tap | **User validated; installed and persistent** | Physical test confirmed; a screenshot cannot prove display wakeup |
-| R14 | Firefox tabs on the left | Requested; native setting under investigation | Validate in Firefox before changing its normal profile |
-| R15 | Enable/disable and restore previous setup | Build, package backup, and rollback checks passed; live rollback review pending | No main-desktop workspace activation yet |
+| R14 | Firefox tabs on the left | Configured in the normal profile; browser reopened | Left-side tabs observed; user confirmation pending |
+| R15 | Enable/disable and restore previous setup | Build, package backup, and rollback checks passed; live rollback review pending | Actual user-session activation completed; manual rollback review pending |
 | R16 | Per-step reports with screenshots | First report published; ongoing | Append decisions and mark user approvals explicitly |
 
 ## Evidence scope
@@ -57,6 +58,19 @@ popups, native browser interactions, drag-and-drop, pointer constraints, and sus
 2. **Next:** correct the dock and window controls without changing the approved baseline.
 3. Review overview selection and physical drag-to-split.
 4. Test Firefox with vertical tabs and other actual applications.
-5. Verify persistence and clean rollback before replacing the main workspace.
+5. Verify cold-start persistence and clean rollback on the installed workspace.
 
 New requests receive an ID here. A passing test alone never changes a row to “user validated”.
+
+## Integration issues recorded
+
+- An earlier demo stopped when a touch callback called `TouchPoint::setSurfacePosition`,
+  declared in KWin headers but not exported by the target library. The call was removed;
+  per-contact coordinate compensation is tested. Both modules now link with `--no-undefined`,
+  and `ldd -r` plus the full integration suite passed before actual-session activation.
+- A Steam scaling issue on the development PC disappeared after reboot; causality was not
+  established. Graphical tests on that PC are suspended. Further graphical verification runs
+  on the explicitly authorized target with separate test configuration where appropriate.
+- Firefox was initially outside the demo session. It is now managed by the actual workspace;
+  its normal profile uses native vertical-tab preferences. Client-side controls remain an
+  application compatibility topic rather than a reason to crop arbitrary UI content.
