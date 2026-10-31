@@ -1,8 +1,4 @@
-/*
- * Barre en arc pour écran rond (conteneur de panneau Plasma 6).
- * Les widgets (et, en option, les applis ouvertes) sont placés le long du cercle
- * inscrit dans l'écran, sur un fond courbe. Bord haut ou bas selon le panneau.
- */
+// Plasma 6 panel containment with widgets and tasks arranged along an arc.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Window
@@ -20,12 +16,11 @@ ContainmentItem {
     readonly property int gap: Plasmoid.configuration.gap
     readonly property int edgeMargin: Plasmoid.configuration.edgeMargin
     readonly property bool atTop: Plasmoid.location === PlasmaCore.Types.TopEdge
-    // Cercle inscrit dans l'écran (coordonnées du panneau)
+    // Inscribed circle in panel coordinates.
     readonly property real radius: Math.min(Screen.width, Screen.height) / 2
     readonly property real cx: width / 2
     readonly property real cy: atTop ? radius : height - radius
-    // Rayon de la bande (fond) ; les icônes sont décalées vers le bord quand des
-    // traits d'état sont affichés, pour que « trait + icône » reste centré dans la bande.
+    // Offset icons outward to center each icon and its status indicator.
     readonly property real track: radius - edgeMargin - iconSize / 2
     readonly property real indicatorGap: 4
     readonly property real iconShift: Plasmoid.configuration.showTasks ? (indicatorGap + 3) / 2 : 0
@@ -51,7 +46,7 @@ ContainmentItem {
         relayout();
     }
 
-    // Liste ordonnée des éléments à placer : widgets + (option) applis ouvertes
+    // Insert optional tasks among the ordered applets.
     function elements() {
         const out = appletItems.slice();
         if (Plasmoid.configuration.showTasks) {
@@ -68,10 +63,9 @@ ContainmentItem {
         return out;
     }
 
-    // Toutes les icônes ont la même taille ; seuls l'horloge (texte) et la zone de
-    // notification (plusieurs icônes) sont plus larges.
+    // Clock text and tray contents may span multiple icon slots.
     readonly property var wideApplets: ({ "org.kde.plasma.digitalclock": 2.6 })
-    // Icônes en couleur qui remplissent leur case : réduites pour s'aligner sur les pictos
+    // Match the apparent size of filled icons and symbolic icons.
     readonly property var iconScale: ({ "org.kde.plasma.devicenotifier": 0.62, "org.kde.plasma.notifications": 1.25 })
     readonly property real defaultAppletScale: 0.92
     readonly property string trayPlugin: "org.kde.plasma.systemtray"
@@ -82,7 +76,7 @@ ContainmentItem {
         if (item === sepBefore || item === sepAfter) return 2;
         const name = pluginOf(item);
         if (wideApplets[name]) {
-            // largeur réelle du texte de l'horloge, pour qu'elle soit vraiment centrée
+            // Center the actual clock text.
             const rep = item.compactRepresentationItem;
             const m = Math.max(rep ? (rep.Layout.minimumWidth || 0) : 0, rep ? (rep.implicitWidth || 0) : 0, item.Layout.minimumWidth || 0);
             return isFinite(m) && m > iconSize / 2 && m < 6 * iconSize ? Math.round(m) : Math.round(iconSize * wideApplets[name]);
@@ -99,7 +93,7 @@ ContainmentItem {
 
     property real arcStart: 0
     property real arcEnd: 0
-    // indicateurs des applis : { phi, span, state } (state : active | open | minimized)
+    // Indicators: { phi, span, state: active | open | minimized }.
     property var indicators: []
 
     function relayout() {
@@ -113,7 +107,7 @@ ContainmentItem {
         const ind = [];
         for (let i = 0; i < els.length; ++i) {
             const it = els[i], w = widths[i];
-            const phi = (s + w / 2) / track;           // angle depuis l'axe vertical
+            const phi = (s + w / 2) / track;           // Angle from the vertical axis.
             const px = cx + iconTrack * Math.sin(phi);
             const py = atTop ? cy - iconTrack * Math.cos(phi) : cy + iconTrack * Math.cos(phi);
             const isSep = it === sepBefore || it === sepAfter;
@@ -121,7 +115,7 @@ ContainmentItem {
             it.height = isSep ? Math.round(iconSize * 0.6) : iconSize;
             it.x = px - w / 2;
             it.y = py - it.height / 2;
-            // les éléments larges (zone de notification) sont inclinés pour suivre la courbe
+            // Separators always follow the arc; icon tilt is optional.
             const tilt = Plasmoid.configuration.tilt || isSep;
             it.rotation = tilt ? (atTop ? phi : -phi) * 180 / Math.PI : 0;
             it.scale = isSep || !pluginOf(it) ? 1 : (iconScale[pluginOf(it)] || defaultAppletScale);
@@ -154,7 +148,7 @@ ContainmentItem {
         relayout();
     }
 
-    // Fond courbe : un trait épais, arrondi aux bouts, qui suit le cercle
+    // Arc background with round caps.
     Canvas {
         id: bg
         anchors.fill: parent
@@ -162,7 +156,7 @@ ContainmentItem {
             const ctx = getContext("2d");
             ctx.reset();
             if (root.arcEnd <= root.arcStart) return;
-            // les bouts arrondis débordent de lineWidth/2 : on raccourcit l'arc pour garder une petite marge
+            // Account for cap overhang at both ends.
             const pad = -(root.iconSize / 2) / root.track;
             const a0 = root.atTop ? -Math.PI / 2 + root.arcStart - pad : Math.PI / 2 - root.arcEnd - pad;
             const a1 = root.atTop ? -Math.PI / 2 + root.arcEnd + pad : Math.PI / 2 - root.arcStart + pad;
@@ -174,7 +168,7 @@ ContainmentItem {
             ctx.strokeStyle = Qt.rgba(c.r, c.g, c.b, 0.82);
             ctx.stroke();
 
-            // traits d'état des applis, côté intérieur (vers le centre de l'écran)
+            // Status arcs face the screen center.
             const r = root.iconTrack - root.iconSize / 2 - root.indicatorGap;
             const hl = Kirigami.Theme.highlightColor, tx = Kirigami.Theme.textColor;
             ctx.lineCap = "round";
@@ -194,7 +188,7 @@ ContainmentItem {
 
     Item { id: arcLayer; anchors.fill: parent }
 
-    // Fins séparateurs (orientés vers le centre du cercle)
+    // Radial separators.
     component Separator: Rectangle {
         parent: arcLayer
         radius: width / 2
@@ -205,7 +199,7 @@ ContainmentItem {
     Separator { id: sepBefore }
     Separator { id: sepAfter }
 
-    // Applis ouvertes (option showTasks)
+    // Optional task list.
     TaskManager.TasksModel {
         id: tasksModel
         filterByVirtualDesktop: false

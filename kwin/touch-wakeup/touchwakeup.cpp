@@ -17,8 +17,7 @@ public:
     void touchUp(KWin::TouchUpEvent *event) override {
         const bool off = KWin::workspace()->dpmsState() != KWin::Workspace::DpmsState::On;
         if (state.up(event->id, off)) {
-            // Let KWin's DPMS filter consume the release before removing that
-            // filter. No synthetic mouse events, no changes to the lock screen.
+            // Let the DPMS filter consume the release before waking the display.
             QTimer::singleShot(0, this, [] {
                 if (KWin::workspace()->dpmsState() != KWin::Workspace::DpmsState::On) {
                     KWin::workspace()->requestDpmsState(KWin::Workspace::DpmsState::On);

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-[[ $# == 1 && -f $1 && -s $1 ]] || { printf '%s\n' 'Usage : restore-panels.sh /chemin/sauvegarde'; exit 2; }
+[[ $# == 1 && -f $1 && -s $1 ]] || { printf '%s\n' 'Usage: restore-panels.sh /path/to/backup'; exit 2; }
 rc="${XDG_CONFIG_HOME:-$HOME/.config}/plasma-org.kde.plasma.desktop-appletsrc"
 backup=$(mktemp "${rc}.before-restore-XXXXXXXX")
 cp -p -- "$rc" "$backup"
@@ -12,4 +12,4 @@ qdbus6 org.kde.KWin /Scripting org.kde.kwin.Scripting.unloadScript round-safe-ar
 qdbus6 org.kde.KWin /KWin reconfigure
 systemctl --user start plasma-plasmashell.service
 trap - EXIT
-printf 'Disposition restaurée. Sauvegarde avant restauration : %s\n' "$backup"
+printf 'Layout restored. Previous layout backed up to: %s\n' "$backup"

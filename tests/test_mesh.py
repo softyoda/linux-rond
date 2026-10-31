@@ -17,8 +17,7 @@ class ApprovedMesh(unittest.TestCase):
                 if i in (0,self.n-1) or j in (0,self.n-1):
                     self.assertAlmostEqual(x*x+y*y,1,places=10)
     def test_no_fold_at_any_face_corner(self):
-        # Le déterminant d'une face bilinéaire est affine : contrôler les quatre
-        # coins garantit son signe sur toute la face, pas seulement au centre.
+        # A bilinear face has an affine determinant; its corners bound the sign.
         for j in range(self.n-1):
             for i in range(self.n-1):
                 p,q,r,s=self.p[j][i],self.p[j][i+1],self.p[j+1][i],self.p[j+1][i+1]

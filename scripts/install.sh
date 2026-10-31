@@ -16,4 +16,4 @@ install_package KWin/Script "$root/kwin/round-safe-area" "${XDG_DATA_HOME:-$HOME
 kwriteconfig6 --file kwinrc --group Plugins --key round-safe-areaEnabled true
 qdbus6 org.kde.KWin /Scripting org.kde.kwin.Scripting.unloadScript round-safe-area >/dev/null 2>&1 || true
 qdbus6 org.kde.KWin /KWin reconfigure
-printf '%s\n' 'Conteneur en arc et zone sûre installés. Panneaux existants conservés.'
+printf '%s\n' 'Arc panel and safe area installed. Existing panels preserved.'

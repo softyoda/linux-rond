@@ -10,7 +10,7 @@ cmake --build "$build" --parallel 2
 ctest --test-dir "$build" --output-on-failure
 destination="${XDG_DATA_HOME:-$HOME/.local/share}/linux-rond/touch-wakeup"
 mkdir -p "$destination"
-# Une mise à jour ne doit pas écraser le fichier mappé dans KWin.
+# Replace the library atomically after unloading it.
 qdbus6 org.kde.KWin /Plugins org.kde.KWin.Plugins.UnloadPlugin linux_rond_touch_wakeup >/dev/null
 install -m 644 "$build/linux_rond_touch_wakeup.so" "$destination/linux_rond_touch_wakeup.so.new"
 mv -f "$destination/linux_rond_touch_wakeup.so.new" "$destination/linux_rond_touch_wakeup.so"
@@ -23,6 +23,6 @@ from pathlib import Path
 # Desktop Entry quoting differs from shell quoting; quote for Exec explicitly.
 command='"'+sys.argv[1].replace('\\','\\\\').replace('"','\\"').replace('`','\\`').replace('$','\\$').replace('%','%%')+'"'
 p=Path(sys.argv[2]);p.parent.mkdir(parents=True,exist_ok=True)
-p.write_text('[Desktop Entry]\nType=Application\nName=Linux Rond — réveil tactile\nExec='+command+'\nOnlyShowIn=KDE;\nX-KDE-autostart-phase=2\n')
+p.write_text('[Desktop Entry]\nType=Application\nName=Linux Rond — touch wakeup\nExec='+command+'\nOnlyShowIn=KDE;\nX-KDE-autostart-phase=2\n')
 PY
-printf '%s\n' 'Réveil tactile installé dans le compte utilisateur et activé au démarrage de Plasma.'
+printf '%s\n' 'Touch wakeup installed for this user and enabled at Plasma startup.'

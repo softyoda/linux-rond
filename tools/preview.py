@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Aperçu de l'écran rond : assombrit les coins invisibles et trace le cercle + le carré inscrit."""
+"""Dim hidden corners and outline the display circle and safe square."""
 import sys
 from PIL import Image, ImageDraw
 src, dst = sys.argv[1], sys.argv[2]

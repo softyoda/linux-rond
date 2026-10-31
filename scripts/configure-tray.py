@@ -1,5 +1,4 @@
-# Zone de notification du dock : seulement les icônes d'applis (+ notifications),
-# icônes à la taille de la barre, espacement normal. À lancer Plasma arrêté.
+# Configure arc-panel trays while Plasma is stopped.
 import re, sys
 p = sys.argv[1]; lines = open(p).read().split("\n")
 groups, cur = {}, None
@@ -35,4 +34,4 @@ for t in trays:
     out += ["", t + "[General]", "extraItems=org.kde.plasma.cameraindicator", "knownItems=" + ",".join(known),
             "scaleIconsToFit=true", "iconSpacing=2"]
 open(p, "w").write("\n".join(out) + "\n")
-print("zones de notif :", trays)
+print("Configured trays:", trays)

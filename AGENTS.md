@@ -1,10 +1,10 @@
 # Linux Rond
 
-- Répondre à l’utilisateur en français.
-- Ce dépôt est la source du projet ; les dotfiles ne font que l’installer à une révision précise.
-- Après validation d’un changement par l’utilisateur : vérifier, commiter et pousser ici.
-- Garder les développements non validés clairement identifiés ; ne pas présenter une simulation comme un effet installé.
-- Ne publier ni captures du bureau personnel, ni hôtes, chemins privés, adresses réseau ou secrets.
-- Les données géométriques du maillage approuvé sont publiques ; utiliser des textures de démonstration synthétiques.
-- Ne pas interrompre la session graphique pour des essais : utiliser une session KWin isolée.
-- Distinguer la compatibilité testée (version de KWin, Wayland/XWayland, entrée) des objectifs futurs.
+- Reply to the user in French.
+- Use English for identifiers, comments, docstrings, logs, and documentation. Keep code comments short and useful. Preserve explicit UI translations such as `Name[fr]`.
+- This repository owns the project; dotfiles only install a pinned revision.
+- Verify, commit, and push user-approved changes here.
+- Keep `docs/ROADMAP.md` current. Distinguish implemented features, validated experiments, and pending work; do not present simulations as installed effects.
+- Do not publish personal screenshots, hostnames, private paths, network addresses, or secrets. Use synthetic demo textures.
+- Test compositor changes in an isolated KWin session before deployment.
+- State tested KWin versions, window systems, and input methods rather than claiming universal compatibility.

@@ -1,8 +1,8 @@
 var scr = -1;
 var candidates = 0;
 for (var i = 0; i < screenCount; ++i) { var g = screenGeometry(i); if (g.width == g.height) { scr = i; candidates++; } }
-if (candidates > 1) throw new Error("Plusieurs écrans carrés : configuration explicite nécessaire");
-if (scr < 0) throw new Error("Aucun écran carré détecté");
+if (candidates > 1) throw new Error("Multiple square outputs: explicit configuration required");
+if (scr < 0) throw new Error("No square output detected");
 panels().forEach(function (p) { if (p.screen == scr) p.remove(); });
 
 function arcPanel(loc, h) {
@@ -13,7 +13,7 @@ function arcPanel(loc, h) {
     return p;
 }
 
-// Haut : son · Wi-Fi · heure · clé USB · luminosité
+// Top: volume, network, clock, devices, brightness.
 var top = arcPanel("top", 120);
 top.addWidget("org.kde.plasma.volume");
 top.addWidget("org.kde.plasma.networkmanagement");
@@ -23,7 +23,7 @@ clock.writeConfig("showDate", false);
 top.addWidget("org.kde.plasma.devicenotifier");
 top.addWidget("org.kde.plasma.brightness");
 
-// Bas : menu · applis ouvertes · icônes d'applis
+// Bottom: launcher, tasks, notifications, tray.
 var dock = arcPanel("bottom", 120);
 dock.writeConfig("showTasks", true);
 dock.writeConfig("tasksIndex", 1);

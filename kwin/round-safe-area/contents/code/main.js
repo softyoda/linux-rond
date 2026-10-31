@@ -1,11 +1,5 @@
-/*
- * Zone sûre écran rond — KWin 6
- * Sur un écran rond (sortie carrée, ou OutputName), le cadre visible est le
- * cercle inscrit : on garde les fenêtres dans le carré inscrit (côté = d·Inset).
- *  - AndroidMode : chaque fenêtre redimensionnable occupe tout le carré.
- *  - sinon : les fenêtres sont seulement ramenées dans le carré.
- * Les fenêtres plein écran (vidéo, jeux) ne sont pas touchées, sauf ConstrainFullscreen.
- */
+// Keep windows in the inscribed square. AndroidMode fills it with resizable
+// apps; fullscreen windows are exempt unless ConstrainFullscreen is enabled.
 const outputName = String(readConfig("OutputName", ""));
 const inset = Number(readConfig("Inset", 0.7071));
 const androidMode = readConfig("AndroidMode", true) == true;
@@ -27,7 +21,7 @@ function safeRect(window) {
     const d = Math.min(g.width, g.height);
     const s = Math.floor(d * inset);
     const sq = { x: g.x + (g.width - s) / 2, y: g.y + (g.height - s) / 2, w: s, h: s };
-    // Intersection avec la zone hors panneaux
+    // Exclude panel space.
     const a = workspace.clientArea(KWin.MaximizeArea, window);
     const x1 = Math.max(sq.x, a.x), y1 = Math.max(sq.y, a.y);
     const x2 = Math.min(sq.x + sq.w, a.x + a.width), y2 = Math.min(sq.y + sq.h, a.y + a.height);
@@ -52,7 +46,7 @@ function fit(window, force) {
         if (window.resizeable) { w = Math.min(w, r.width); h = Math.min(h, r.height); }
         x = Math.min(Math.max(x, r.x), r.x + r.width - w);
         y = Math.min(Math.max(y, r.y), r.y + r.height - h);
-        if (force && !window.normalWindow) { // dialogues : centrés
+        if (force && !window.normalWindow) { // Center dialogs.
             x = r.x + (r.width - w) / 2; y = r.y + (r.height - h) / 2;
         }
     }

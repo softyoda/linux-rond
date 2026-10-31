@@ -2,8 +2,7 @@
 #pragma once
 #include <set>
 
-// Wait until all fingers are lifted: the wake-up tap must not become a click
-// on an application which never received the corresponding touch-down event.
+// Wait for all fingers to lift so the wakeup tap cannot reach an app.
 class TapWakeState {
 public:
     void down(int id, bool screenOff) {

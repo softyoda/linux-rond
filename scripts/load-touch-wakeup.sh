@@ -6,23 +6,21 @@ binary="$root/$plugin.so"
 [[ -f $binary && -f $root/kwin-version ]] || exit 1
 current=$(kwin_wayland --version)
 [[ $current == "$(cat "$root/kwin-version")" ]] || {
-    printf '%s\n' 'Linux Rond : version KWin modifiée ; relancer install-touch-wakeup.sh.' >&2
+    printf '%s\n' 'Linux Rond: KWin version changed; rerun install-touch-wakeup.sh.' >&2
     exit 1
 }
-# KWin préfixe les noms avec kwin/plugins, puis Qt cherche dans plusieurs
-# dossiers. Rejoindre la racine avant le chemin utilisateur fonctionne dans
-# chacun de ces dossiers, sans installation système ni QT_PLUGIN_PATH global.
+# KWin prefixes plugin paths; resolve from the root across Qt search paths.
 relative="../../../../../../../../${binary#/}"
 relative=${relative%.so}
 for attempt in {1..30}; do
     if loaded=$(qdbus6 org.kde.KWin /Plugins org.kde.KWin.Plugins.LoadedPlugins 2>/dev/null); then
         if printf '%s\n' "$loaded" | grep -Fxq "$plugin"; then exit 0; fi
         result=$(qdbus6 org.kde.KWin /Plugins org.kde.KWin.Plugins.LoadPlugin "$relative")
-        [[ $result == true ]] || { printf '%s\n' 'Échec du chargement du réveil tactile.' >&2; exit 1; }
-        printf '%s\n' 'Linux Rond : réveil au premier toucher activé.'
+        [[ $result == true ]] || { printf '%s\n' 'Failed to load touch wakeup.' >&2; exit 1; }
+        printf '%s\n' 'Linux Rond: single-tap wakeup enabled.'
         exit 0
     fi
     sleep 1
 done
-printf '%s\n' 'Session KWin indisponible.' >&2
+printf '%s\n' 'KWin session unavailable.' >&2
 exit 1
