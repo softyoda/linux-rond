@@ -89,6 +89,6 @@ Bug reports should include the distribution, Plasma/KWin versions, display resol
 and input devices. Contributions are welcome; use concise English comments and documentation.
 Compositor changes are tested in an isolated session before deployment.
 
-[Roadmap](docs/ROADMAP.md) · [Projection mesh](projection/approved-mesh.json) · [OBJ with UVs](projection/approved-mesh.obj)
+[Validation tracker and screenshots](docs/VALIDATION.md) · [Roadmap](docs/ROADMAP.md) · [Projection mesh](projection/approved-mesh.json) · [OBJ with UVs](projection/approved-mesh.obj)
 
 Licensed under [GPL-2.0-or-later](LICENSE).
