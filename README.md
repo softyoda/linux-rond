@@ -1,76 +1,94 @@
 # Linux Rond
 
-A **KDE Plasma 6 / KWin** interface for circular touchscreens, independent of personal dotfiles.
+**A desktop shaped for circular touchscreens.**
 
-## Status
+Linux Rond adapts KDE Plasma to round displays: controls follow the edge, windows stay
+inside the visible area, and a single tap wakes the screen. It is built for small touch
+monitors, embedded displays, and custom Linux devices where a rectangular desktop wastes space.
 
-- **Working:** arc panels with tilted icons and curved task indicators; a KWin safe-area script; optional single-tap display wakeup.
-- **Visually approved:** the balanced M5 square-to-disk mesh ([JSON](projection/approved-mesh.json), [OBJ with UVs](projection/approved-mesh.obj)).
-- **Pending:** live projection, transformed input, per-app modes, bubble overview, and split-screen. See the [task checklist](docs/ROADMAP.md).
+![Square application content mapped onto the approved circular projection](docs/images/projection-preview.png)
+*Projection study using synthetic content. Live window projection is under development.*
 
-The projection is still a simulation, not an installed KWin effect. Applications currently
-use the safe square. Personal screenshots used for validation are not distributed.
+## What it does
 
-## Install
+| Feature | Status |
+| --- | --- |
+| Top and bottom panels arranged along an arc | Available |
+| Tilted icons and curved window-state indicators | Available |
+| Safe square window placement inside the display | Available |
+| Wake the display with one touch | Available; tested on KWin 6.8.1 |
+| Balanced square-to-circle projection | Mesh approved; live integration in progress |
+| Matching mouse and touch coordinates after projection | In development |
+| Saved square/circular mode for each application | In development |
+| Touch-friendly window overview with packed bubbles | In development |
+| Drag-to-split workspace with two half-disks | In development |
 
-Requires a Plasma 6 session, `kpackagetool6`, `kwriteconfig6`, `qdbus6`, Python 3,
-and the `plasma-plasmashell.service` user service. These scripts install no system packages.
+The upcoming circular mode uses the same geometry for rendering and input, with window
+controls in the top arc. In split-screen, each half has its own controls; leaving the
+split restores each application's saved shape. See the [roadmap](docs/ROADMAP.md).
+
+## Requirements
+
+- A Linux desktop running **KDE Plasma 6 on Wayland**.
+- A circular display exposed as a square output; touchscreen recommended.
+- `kpackagetool6`, `kwriteconfig6`, `qdbus6`, Python 3, and the
+  `plasma-plasmashell.service` user service.
+
+The native wakeup plugin additionally needs C++23, CMake, and matching KWin/Qt/KF
+development files. GNOME and other compositors are not currently supported.
+
+## Get started
 
 ```sh
 git clone https://github.com/softyoda/linux-rond.git
 cd linux-rond
 ./scripts/install.sh
-# Optional: replace panels on the single square output.
+```
+
+This installs the panel component and enables safe-area window placement for your user.
+To create the arc panels:
+
+```sh
 ./scripts/configure-panels.sh
 ```
 
-`install.sh` installs the arc containment and enables the safe-area script for the current user.
-`configure-panels.sh` backs up the layout, **replaces panels on the square output**, and
-restarts Plasma. It leaves other outputs unchanged and refuses ambiguous output selection.
-Set display scaling in System Settings → Display; no machine-specific scale is imposed.
+**This replaces panels on the single square output**, saves the previous layout, and
+restarts Plasma. Other outputs are unchanged. Multiple square outputs require explicit
+configuration. Adjust scaling in System Settings → Display.
 
-```sh
-./scripts/check.sh
-./scripts/restore-panels.sh /path/to/backup
-# Optional screenshot preview; requires Pillow.
-python3 tools/preview.py capture.png preview.png
-```
-
-Restoring a backup restores the saved Plasma layout and disables the safe-area script.
-
-## Single-tap wakeup
-
-KWin normally requires a double tap to wake a sleeping display
-([upstream implementation](https://github.com/KDE/kwin/blob/master/src/dpmsinputeventfilter.cpp)).
-The optional native plugin wakes it when the last finger is lifted after one tap.
-It does not unlock the session, synthesize clicks, change idle timeouts, or wake a suspended computer.
+To enable single-tap wakeup:
 
 ```sh
 ./scripts/install-touch-wakeup.sh
-# Restore native KWin behavior.
-./scripts/disable-touch-wakeup.sh
 ```
 
-Requires C++23, CMake, and matching KWin/Qt/KF development files. Tested with **KWin 6.8.1**,
-including isolated load/unload tests and a physical single-tap test confirmed on October 31, 2026.
-The plugin installs in the user account and loads through KDE Autostart; no direct `/dev/input`
-access or system configuration changes are required.
+The screen wakes after you lift your finger. The plugin does not unlock the session,
+change the idle timeout, or wake a suspended computer. It loads automatically at login;
+re-run the installer after a KWin update to rebuild it for the new version.
 
-**Re-run the installer after a KWin update.** The loader rejects binaries built for a different
-version. Logic tests cover single-touch, multitouch, and unexpected releases; other hardware
-still needs physical validation.
+## Check or restore
+
+```sh
+./scripts/check.sh
+./scripts/disable-touch-wakeup.sh
+./scripts/restore-panels.sh /path/to/backup
+```
+
+Restoring the saved layout also disables safe-area placement. All installation is
+per-user; these scripts do not install system packages.
 
 ## Development
 
 ```sh
 ./scripts/check-source.sh
+# Rebuild the projection image; requires NumPy and Pillow.
+python3 tools/render_projection_preview.py
 ```
 
-Use English identifiers, comments, docstrings, logs, and documentation. Keep comments concise;
-retain explicit UI translations. Report the distribution, Plasma/KWin versions, display
-resolution, and input devices when testing. GNOME and other compositors are not supported.
+Bug reports should include the distribution, Plasma/KWin versions, display resolution,
+and input devices. Contributions are welcome; use concise English comments and documentation.
+Compositor changes are tested in an isolated session before deployment.
 
-The initial implementation came from `softyoda/dotfiles` at `84db998` (arc panels first
-validated in `34c32c5`). Dotfiles now reference this repository at an immutable revision.
+[Roadmap](docs/ROADMAP.md) · [Projection mesh](projection/approved-mesh.json) · [OBJ with UVs](projection/approved-mesh.obj)
 
-License: GPL-2.0-or-later. KDE dependencies retain their respective licenses.
+Licensed under [GPL-2.0-or-later](LICENSE).
