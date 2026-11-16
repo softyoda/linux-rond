@@ -6,6 +6,7 @@ import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
 import org.kde.kirigami as Kirigami
 import org.kde.taskmanager as TaskManager
+import org.kde.plasma.extras as PlasmaExtras
 import "ArcGeometry.js" as ArcGeometry
 
 ContainmentItem {
@@ -25,7 +26,7 @@ ContainmentItem {
     readonly property real track: radius - edgeMargin - iconSize / 2
     readonly property real indicatorGap: 4
     readonly property real iconShift: Plasmoid.configuration.showTasks ? (indicatorGap + 3) / 2 : 0
-    readonly property real iconTrack: (!atTop && contentRadius > 0 ? backgroundBand.layoutCenter : track) + iconShift
+    readonly property real iconTrack: track + iconShift
 
     property var appletItems: []
     property var appletWatchers: []
@@ -35,9 +36,22 @@ ContainmentItem {
     readonly property real contentRadius: workspaceBackend && workspaceBackend.connected
         && workspaceBackend.workspaceState.enabled && workspaceBackend.workspaceState.content
         ? workspaceBackend.workspaceState.content.width / 2 : 0
-    readonly property var backgroundBand: ArcGeometry.backgroundBand(track, iconSize, contentRadius, dpr, radius)
+    // Validated band thickness; stretching it to the screen edge and the content thickened the capsules.
+    readonly property var backgroundBand: ArcGeometry.backgroundBand(track, iconSize, 0, dpr, radius)
 
     onContentRadiusChanged: Qt.callLater(root.relayout)
+    // Window-control capsules sit centered on the side arcs (±90°) in every mode,
+    // on a slightly thicker band sharing the outer edge of the clock capsule.
+    readonly property bool sideControls: atTop && contentRadius > 0
+    readonly property real sideCenter: sideControls ? track * Math.PI / 2 : 0
+    readonly property int controlsButtonSize: {
+        const reps = appletItems.filter(item => pluginOf(item) === controlsPlugin)
+            .map(item => item.compactRepresentationItem).filter(rep => !!rep);
+        return reps.length ? reps[0].buttonSize : iconSize;
+    }
+    readonly property real sideBandWidth: Math.max(iconSize, controlsButtonSize) + 12
+    readonly property real sideTrack: backgroundBand.outer - sideBandWidth / 2
+    onSideCenterChanged: Qt.callLater(root.relayout)
 
     function addApplet(applet) {
         const item = root.itemFor(applet);
@@ -101,7 +115,10 @@ ContainmentItem {
         if (Plasmoid.configuration.showTasks) {
             const t = [];
             for (let i = 0; i < taskRepeater.count; ++i) t.push(taskRepeater.itemAt(i));
-            const at = Math.max(0, Math.min(Plasmoid.configuration.tasksIndex, out.length));
+            // Tasks follow the launcher (and overview button) whatever is hidden; tasksIndex is only a fallback.
+            const lead = out.reduce((last, item, i) => ["org.kde.plasma.kickoff", "org.kde.plasma.kicker"].includes(pluginOf(item))
+                || (pluginOf(item) === controlsPlugin && controlRole(item) === "overview") ? i : last, -1);
+            const at = lead >= 0 ? lead + 1 : Math.max(0, Math.min(Plasmoid.configuration.tasksIndex, out.length));
             const group = t.filter(x => x);
             if (group.length) {
                 if (at > 0) group.unshift(sepBefore);
@@ -168,25 +185,30 @@ ContainmentItem {
             const widths = els.map(elementWidth);
             const kinds = els.map(item => item.isTask ? "tasks" : pluginOf(item) === controlsPlugin ? controlRole(item)
                 : (pluginOf(item) === "org.kde.plasma.digitalclock" ? "clock" : "system"));
-            const slots = ArcGeometry.layoutSlots(widths, kinds, gap, atTop && contentRadius > 0, !atTop && contentRadius > 0);
+            const slots = ArcGeometry.layoutSlots(widths, kinds, gap, atTop && contentRadius > 0, false,
+                // caps overhang each capsule by (band - icon)/2 on both sides, plus a visible gap
+                (backgroundBand.width - iconSize) + 2 * gap, sideCenter);  // dock stays centered as a whole
             const ind = [];
             for (let i = 0; i < els.length; ++i) {
                 const it = els[i], w = widths[i];
                 const phi = (slots.starts[i] + w / 2) / track;           // Angle from the vertical axis.
-                const px = cx + iconTrack * Math.sin(phi);
-                const py = atTop ? cy - iconTrack * Math.cos(phi) : cy + iconTrack * Math.cos(phi);
+                const isControl = pluginOf(it) === controlsPlugin;
+                const rr = isControl && sideControls ? sideTrack : iconTrack;
+                const px = cx + rr * Math.sin(phi);
+                const py = atTop ? cy - rr * Math.cos(phi) : cy + rr * Math.cos(phi);
                 const isSep = it === sepBefore || it === sepAfter;
                 it.width = w;
-                it.height = isSep ? Math.round(iconSize * 0.6) : iconSize;
+                it.height = isSep ? Math.round(iconSize * 0.6) : (isControl ? controlsButtonSize : iconSize);
                 it.x = px - w / 2;
                 it.y = py - it.height / 2;
                 // Separators always follow the arc; icon tilt is optional.
                 const tilt = Plasmoid.configuration.tilt || isSep || pluginOf(it) === controlsPlugin;
                 it.rotation = tilt ? (atTop ? phi : -phi) * 180 / Math.PI : 0;
                 if (pluginOf(it) === controlsPlugin && it.compactRepresentationItem) {
-                    it.compactRepresentationItem.arcRadius = iconTrack;
+                    it.compactRepresentationItem.arcRadius = sideControls ? sideTrack : iconTrack;
+                    it.compactRepresentationItem.screenRotation = it.rotation;
                     it.compactRepresentationItem.arcAtTop = atTop;
-                    it.compactRepresentationItem.titleMaxWidth = ArcGeometry.titleWidth(w, track, backgroundBand, iconTrack);
+                    it.compactRepresentationItem.titleMaxWidth = iconSize * 5;  // fixed cap: the slot width depends on the title itself
                 }
                 it.scale = visualScale(it);
                 if (it.isTask) {
@@ -195,13 +217,49 @@ ContainmentItem {
                 }
             }
             indicators = ind;
+            els.forEach((it, i) => { if (pluginOf(it) === trayPlugin) bendAlongArc(it); });
             arcStart = slots.start / track;
             arcEnd = slots.end / track;
-            backgroundSegments = slots.segments.map(segment => ({ start: segment.start / track, end: segment.end / track }));
+            backgroundSegments = slots.segments.map(segment => ({ start: segment.start / track, end: segment.end / track, kind: segment.kind }));
             bg.requestPaint();
         } finally {
             layoutBusy = false;
         }
+    }
+
+    // Bend a multi-icon applet (system tray) so each inner icon follows the arc
+    // instead of the whole block forming a straight tilted line.
+    function arcDelegates(item, depth) {
+        if (!item || depth > 8) return [];
+        const out = [];
+        const kids = item.children || [];
+        for (let i = 0; i < kids.length; ++i) {
+            const kid = kids[i];
+            // GridView/ListView delegates live in a flickable contentItem.
+            if (item.parent && item.parent.cellWidth !== undefined && kid.visible && kid.width > 0) out.push(kid);
+            else out.push(...arcDelegates(kid, depth + 1));
+        }
+        return out;
+    }
+    function bendAlongArc(item) {
+        const rep = item.compactRepresentationItem || item;
+        const r = iconTrack / Math.max(0.01, item.scale);
+        const sign = atTop ? 1 : -1;
+        arcDelegates(rep, 0).forEach(d => {
+            const c = d.parent.mapToItem(item, d.x + d.width / 2, d.y + d.height / 2);
+            const u = c.x - item.width / 2;
+            const a = u / r;
+            if (!d.transform || d.transform.length !== 2) {
+                d.transform = [
+                    Qt.createQmlObject("import QtQuick; Rotation {}", d),
+                    Qt.createQmlObject("import QtQuick; Translate {}", d)
+                ];
+            }
+            const rot = d.transform[0], tr = d.transform[1];
+            rot.origin.x = d.width / 2; rot.origin.y = d.height / 2;
+            rot.angle = sign * a * 180 / Math.PI;
+            tr.y = sign * r * (1 - Math.cos(a));
+        });
     }
 
     onWidthChanged: relayout()
@@ -230,21 +288,24 @@ ContainmentItem {
             ctx.reset();
             if (!root.backgroundSegments.length) return;
             const band = root.backgroundBand;
-            const pad = root.contentRadius > 0 ? Math.asin(Math.min(1, band.width / (2 * band.center))) : root.iconSize / (2 * root.track);
+            const pad = root.iconSize / (2 * root.track);
             const c = Kirigami.Theme.backgroundColor;
             ctx.strokeStyle = ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, 0.82);
             ctx.lineWidth = band.width;
             ctx.lineCap = "round";
             root.backgroundSegments.forEach(segment => {
+                const side = root.sideControls && (segment.kind === "left" || segment.kind === "right");
+                const radiusC = side ? root.sideTrack : band.center;
+                ctx.lineWidth = side ? root.sideBandWidth : band.width;
                 const a0 = root.atTop ? -Math.PI / 2 + segment.start + pad : Math.PI / 2 - segment.end + pad;
                 const a1 = root.atTop ? -Math.PI / 2 + segment.end - pad : Math.PI / 2 - segment.start - pad;
                 ctx.beginPath();
                 if (a1 > a0) {
-                    ctx.arc(root.cx, root.cy, band.center, a0, a1, false);
+                    ctx.arc(root.cx, root.cy, radiusC, a0, a1, false);
                     ctx.stroke();
                 } else {
                     const mid = (a0 + a1) / 2;
-                    ctx.arc(root.cx + band.center * Math.cos(mid), root.cy + band.center * Math.sin(mid), band.width / 2, 0, 2 * Math.PI);
+                    ctx.arc(root.cx + radiusC * Math.cos(mid), root.cy + radiusC * Math.sin(mid), ctx.lineWidth / 2, 0, 2 * Math.PI);
                     ctx.fill();
                 }
             });
@@ -311,12 +372,54 @@ ContainmentItem {
                 opacity: task.model.IsMinimized ? 0.45 : 1
                 active: mouse.containsMouse
             }
+            // Workspace window id (KWin UUID) of this task, without braces.
+            readonly property string windowId: {
+                const ids = task.model.WinIdList || [];
+                return ids.length ? String(ids[0]).replace(/[{}]/g, "") : "";
+            }
+            readonly property var workspaceWindow: root.workspaceBackend ? root.workspaceBackend.findWindow(windowId) : null
+            function openMenu() {
+                taskMenu.visualParent = task;
+                taskMenu.openRelative();
+            }
+            PlasmaExtras.Menu {
+                id: taskMenu
+                placement: root.atTop ? PlasmaExtras.Menu.BottomPosedLeftAlignedPopup : PlasmaExtras.Menu.TopPosedLeftAlignedPopup
+                PlasmaExtras.MenuItem {
+                    text: i18nd("plasma_applet_org.kde.plasma.taskmanager", "Open New Window")
+                    icon: "window-new"
+                    onClicked: tasksModel.requestNewInstance(tasksModel.makeModelIndex(task.index))
+                }
+                PlasmaExtras.MenuItem {
+                    visible: !!task.workspaceWindow && root.workspaceBackend.workspaceState.enabled
+                    text: task.workspaceWindow && task.workspaceWindow.circular ? qsTr("Show as square") : qsTr("Show as circle")
+                    icon: task.workspaceWindow && task.workspaceWindow.circular ? "view-fullscreen" : "draw-circle"
+                    onClicked: root.workspaceBackend.call("ToggleMode", [task.windowId])
+                }
+                PlasmaExtras.MenuItem {
+                    text: task.model.IsMinimized ? i18nd("plasma_applet_org.kde.plasma.taskmanager", "Restore")
+                                                 : i18nd("plasma_applet_org.kde.plasma.taskmanager", "Minimize")
+                    icon: "window-minimize"
+                    onClicked: tasksModel.requestToggleMinimized(tasksModel.makeModelIndex(task.index))
+                }
+                PlasmaExtras.MenuItem {
+                    text: i18nd("plasma_applet_org.kde.plasma.taskmanager", "Close")
+                    icon: "window-close"
+                    onClicked: tasksModel.requestClose(tasksModel.makeModelIndex(task.index))
+                }
+            }
             MouseArea {
                 id: mouse
                 anchors.fill: parent
                 hoverEnabled: true
-                acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+                acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
+                pressAndHoldInterval: 450
+                property bool held: false
+                onPressed: held = false
+                onPressAndHold: { held = true; task.openMenu(); }
                 onClicked: event => {
+                    if (held) return;                       // long press already opened the menu
+                    if (event.button === Qt.RightButton) { task.openMenu(); return; }
                     const idx = tasksModel.makeModelIndex(task.index);
                     if (event.button === Qt.MiddleButton) tasksModel.requestNewInstance(idx);
                     else if (task.model.IsActive) tasksModel.requestToggleMinimized(idx);

@@ -39,8 +39,26 @@ if [[ $mode == --activate-prepared ]]; then
     workspace_install_package "$release/plasma/org.softyoda.arcpanel" org.softyoda.arcpanel
     workspace_install_package "$release/plasma/round-workspace-controls" org.softyoda.roundworkspacecontrols
     qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "$(cat "$release/plasma/round-workspace-controls/configure.js")" >/dev/null
-    systemctl --user restart plasma-plasmashell.service
+    # Arc panels must not reserve screen space: the effect owns the whole output.
+    # KWin would otherwise push windows below the tall top panel.
+    arc_ids=$(qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript \
+        'panels().forEach(function(p){ if (p.type == "org.softyoda.arcpanel") print(p.id + " "); })')
+    systemctl --user stop plasma-plasmashell.service
+    for id in $arc_ids; do
+        if [[ -z $(kreadconfig6 --file linux-rondrc --group PanelVisibility --key "$id") ]]; then
+            kwriteconfig6 --file linux-rondrc --group PanelVisibility --key "$id" \
+                "$(kreadconfig6 --file plasmashellrc --group PlasmaViews --group "Panel $id" --key panelVisibility --default 0)"
+        fi
+        kwriteconfig6 --file plasmashellrc --group PlasmaViews --group "Panel $id" --key panelVisibility 3
+    done
+    systemctl --user start plasma-plasmashell.service
 fi
+# Reconcile panel views after startup or a Plasma restart.
+for attempt in {1..30}; do
+    if qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'print("ready")' >/dev/null 2>&1; then break; fi
+    sleep 1
+done
+qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "$(cat "$release/plasma/round-workspace-controls/configure.js")" >/dev/null
 relative="../../../../../../../../${release#/}/linux_rond_workspace_loader"
 result=$(workspace_bus /Plugins org.kde.KWin.Plugins.LoadPlugin "$relative")
 [[ $result == true ]] || { printf '%s\n' 'KWin rejected the user plugin loader.' >&2; exit 1; }

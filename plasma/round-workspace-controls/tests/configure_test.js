@@ -16,7 +16,7 @@ function settings(object) {
 function panel(type, location) {
     const widgets = [];
     return settings({
-        type, location, height: 120, id: nextId++, screen: 0,
+        type, location, height: 120, floating: true, lengthMode: "fit", id: nextId++, screen: 0,
         widgets: () => widgets.slice(),
         addWidget(type) {
             if (typeof type !== "string") {
@@ -48,17 +48,29 @@ assert.ok(top.widgets().includes(notification));
 assert.equal(notification.config["General/customSetting"], "preserve");
 assert.equal(bottom.widgets().length, 1);
 assert.equal(other.widgets().length, 0);
-assert.equal(top.height, 260);
+assert.equal(top.height, 560);
+assert.equal(top.floating, false);
+assert.equal(top.lengthMode, "fill");
 top.height = 160;
 top.currentConfigGroup = ["LinuxRondWorkspace"];
 top.writeConfig("appliedHeight", 160);
 vm.runInContext(configure, context);
-assert.equal(top.height, 260);
+assert.equal(top.height, 560);
 assert.equal(bottom.config["General/tasksIndex"], 2);
+// Recreated views keep the original rollback values and recover both panel heights.
+top.height = 32;
+bottom.height = 32;
+vm.runInContext(configure, context);
+assert.equal(top.height, 560);
+assert.equal(bottom.height, 120);
+assert.equal(top.config["LinuxRondWorkspace/originalHeight"], 120);
+
 vm.runInContext(rollback, context);
 assert.deepEqual(top.widgets(), [preexisting]);
 assert.deepEqual(bottom.widgets(), [notification]);
 assert.equal(top.height, 120);
+assert.equal(top.floating, true);
+assert.equal(top.lengthMode, "fit");
 assert.equal(bottom.config["General/tasksIndex"], 3);
 vm.runInContext(configure, context);
 top.height = 190;

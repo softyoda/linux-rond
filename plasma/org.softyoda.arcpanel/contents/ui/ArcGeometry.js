@@ -14,7 +14,11 @@ function backgroundBand(track, iconSize, contentRadius, dpr, screenRadius) {
     };
 }
 
-function layoutSlots(widths, kinds, gap, anchorClock, anchorTasks) {
+// segmentGap: arc length between separate capsules, large enough that their round caps never touch.
+// sideCenter > 0: the left/right capsules are centered at ±sideCenter (arc length from the top),
+// i.e. on the free side arcs, in both square and round modes.
+function layoutSlots(widths, kinds, gap, anchorClock, anchorTasks, segmentGap, sideCenter) {
+    const capsuleGap = segmentGap > 0 ? segmentGap : gap;
     const starts = [];
     const segments = [];
     function span(indices) {
@@ -51,8 +55,13 @@ function layoutSlots(widths, kinds, gap, anchorClock, anchorTasks) {
     });
     const systemStart = -anchor;
     const systemEnd = place(system, systemStart, "system");
-    place(left, systemStart - gap - span(left), "left");
-    place(right, systemEnd + gap, "right");
+    if (sideCenter > 0) {
+        place(left, -sideCenter - span(left) / 2, "left");
+        place(right, sideCenter - span(right) / 2, "right");
+    } else {
+        place(left, systemStart - capsuleGap - span(left), "left");
+        place(right, systemEnd + capsuleGap, "right");
+    }
     return {
         starts: starts, segments: segments,
         start: segments.length ? Math.min.apply(null, segments.map(segment => segment.start)) : 0,

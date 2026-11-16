@@ -3,6 +3,6 @@
   <kcfgfile name=""/>
   <group name="General">
     <entry name="role" type="String"><default>right</default></entry>
-    <entry name="buttonSize" type="Int"><default>40</default></entry>
+    <entry name="buttonSize" type="Int"><default>48</default></entry>
   </group>
 </kcfg>

@@ -46,6 +46,15 @@ Item {
     }
     function setEnabled(value) { call("SetEnabled", [new DBus.bool(value)]); }
 
-    Timer { interval: bus.connected ? 500 : 2000; repeat: true; running: true; onTriggered: bus.refresh() }
+    // Push updates: KWin emits StateChanged(json) on every change, so controls update instantly.
+    DBus.SignalWatcher {
+        service: "org.kde.KWin"
+        path: "/LinuxRond"
+        iface: "org.softyoda.LinuxRond"
+        // SignalWatcher calls "dbus" + member for each received signal.
+        function dbusStateChanged(json) { bus.acceptState(json); }
+    }
+    // Fallback polling (also detects KWin restarts).
+    Timer { interval: 2000; repeat: true; running: true; onTriggered: bus.refresh() }
     Component.onCompleted: refresh()
 }

@@ -23,7 +23,7 @@ arcs.forEach(function(panel) {
     var active = String(panel.readConfig("active", false)) === "true";
     if (!active) {
         panel.writeConfig("originalHeight", panel.height);
-        panel.writeConfig("appliedHeight", Math.max(panel.height, 260));
+        panel.writeConfig("appliedHeight", Math.max(panel.height, panel.location === "top" ? 560 : 120));
         panel.currentConfigGroup = ["General"];
         var tasksIndex = panel.readConfig("tasksIndex", 1);
         panel.currentConfigGroup = journalGroup;
@@ -34,15 +34,20 @@ arcs.forEach(function(panel) {
         panel.writeConfig("active", true);
     }
     var added = JSON.parse(panel.readConfig("addedWidgetIds", "[]"));
+    if (panel.readConfig("originalFloating", "__unset__") === "__unset__") {
+        panel.writeConfig("originalFloating", panel.floating);
+        panel.writeConfig("originalLengthMode", panel.lengthMode);
+    }
+    panel.floating = false;
+    panel.lengthMode = "fill";
+    // Plasma may recreate panel views with its 32 px defaults after a display change.
+    var minimumHeight = panel.location === "top" ? 560 : 120;
+    var appliedHeight = Math.max(Number(panel.readConfig("appliedHeight", minimumHeight)), minimumHeight);
+    if (panel.height < minimumHeight) {
+        panel.height = appliedHeight;
+        panel.writeConfig("appliedHeight", appliedHeight);
+    }
     if (panel.location === "top") {
-        var appliedHeight = Number(panel.readConfig("appliedHeight", 260));
-        if (!active) {
-            panel.height = appliedHeight;
-        } else if (appliedHeight < 260) {
-            if (panel.height !== appliedHeight) panel.writeConfig("originalHeight", panel.height);
-            panel.height = Math.max(panel.height, 260);
-            panel.writeConfig("appliedHeight", panel.height);
-        }
         ensure(panel, "left", added);
         ensure(panel, "right", added);
     } else {

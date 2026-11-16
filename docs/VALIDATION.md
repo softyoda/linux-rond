@@ -1,11 +1,18 @@
 # Validation tracker
 
-Updated October 31, 2026. **Working code, automated checks, and user approval are separate statuses.**
+Historical review recorded October 31, 2026. **Working code, automated checks, and user approval are separate statuses.**
 The user requested activation on the actual desktop. The native workspace is now installed
 in the target user session, with the previous configuration backed up and rollback available.
 The separate demonstration session has been stopped; actual application review is ongoing.
 
-## Current review
+## November 16 recovery status
+
+The user reports the current experience as unusable and poorly legible. Earlier approvals
+remain limited to the interactions listed below. Read-only inspection confirms an active native workspace on the separate circular-display
+target, running KWin 6.8.1; the tested recovery build has now been deployed with panel restoration. Physical
+acceptance of this recovery remains pending. See [the recovery audit](RECOVERY.md) for local checks and gaps.
+
+## October 31 review
 
 The user confirmed on the target touchscreen:
 

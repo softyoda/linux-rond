@@ -1,9 +1,42 @@
 # Roadmap
 
-Status as of October 31, 2026. Native workspace development is underway in three
-parallel workstreams: rendering/window management, input mapping, and overview/split UX.
-The experimental workspace is installed on the target at the user’s request.
-Unchecked items still need final user or compatibility validation; see [the validation tracker](VALIDATION.md).
+Status as of November 16, 2026. **The framework is an unfinished prototype.**
+The user reports that the installed experience is unusable and poorly legible. The
+October interaction approvals below do not constitute acceptance of the current UI.
+Read-only inspection confirms an active native workspace on the separate circular-display
+target (KWin 6.8.1). Physical behavior has not been re-verified.
+
+## Recovery audit
+
+- All seven local agent branches and worktrees remain at the shared UX specification
+  commit (`79dd11e`), with no uncommitted changes. No additional implementation was
+  found in those worktrees.
+- The local UI prototype (`c68b9de`) changes side capsules, canvas sizing, and dock
+  behavior; it was explicitly recorded as unvalidated and is ahead of `origin/main`
+  confirmed by a remote refresh during this audit.
+- The shared QML module, circular launcher, quick settings, calendar, and application
+  adaptations described in [UX.md](UX.md) are planned, not delivered components.
+- Source checks and offscreen controls tests now match the side-capsule prototype.
+  They establish test consistency, not physical usability or visual approval.
+- See [the recovery audit](RECOVERY.md) for reproduced failures, fixes, and test scope.
+
+## Implemented, still requiring product validation
+
+Native rendering/input mapping, saved modes, overview, split, and rollback code exist.
+Historical isolated probe tests are recorded in [VALIDATION.md](VALIDATION.md).
+The unchecked tasks below are acceptance gates, **not a list of entirely missing code**.
+
+## Recovery priorities
+
+1. Target identified; native build and isolated visual checks resumed. Investigate
+   circular edge text distortion and real application sizing before deployment.
+2. Panel clipping fixed and deployed after isolated reproduction: top/dock views and
+   side controls are visible again. Confirm physical usability and persistence; improve
+   square workspace, text, dock, and window controls before adding UI.
+3. Validate real applications, popups, scaling, physical touch, and rollback.
+4. Implement the shared UI module and circular system sheets incrementally.
+5. Complete overview/split and application adaptations, then validate cold startup and
+   performance before a release. Do not deploy compositor changes before isolated tests.
 
 ## Completed
 

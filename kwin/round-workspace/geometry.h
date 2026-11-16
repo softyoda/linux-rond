@@ -7,6 +7,7 @@
 #include <optional>
 
 namespace LinuxRond {
+bool canvasMatches(const QRectF &actual, const QRectF &requested);
 enum class Shape { Square, Circle, LeftHalf, RightHalf, RoundedSquare };
 struct WarpVertex {
     QPointF source;

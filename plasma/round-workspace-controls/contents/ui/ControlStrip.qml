@@ -15,25 +15,40 @@ Item {
     property bool arcAtTop: true
     property real titleMaxWidth: -1
     readonly property bool overviewButton: role === "overview"
+    // Rotation applied to the whole strip by the arc panel (set by the panel); keeps buttons upright.
+    property real screenRotation: 0
     readonly property bool split: !!backend.workspaceState.splitLeftId && !!backend.workspaceState.splitRightId
-    readonly property bool shown: overviewButton || (backend.workspaceState.enabled && !backend.workspaceState.overview && !!target && !target.minimized && (role !== "left" || split))
+    // Single window: "left" shows the title, "right" the buttons. Split: each side shows both.
+    readonly property bool hasWindow: backend.workspaceState.enabled && !backend.workspaceState.overview
+        && !!target && !target.minimized
+    readonly property bool showTitle: !overviewButton && hasWindow && (split || role === "left")
+    readonly property bool showButtons: !overviewButton && hasWindow && (split || role === "right")
+    readonly property bool shown: overviewButton || showTitle || showButtons
     readonly property string targetId: split
         ? (role === "left" ? backend.workspaceState.splitLeftId : backend.workspaceState.splitRightId)
-        : (role === "left" ? "" : backend.workspaceState.activeId || "")
+        : (backend.workspaceState.activeId || "")
     readonly property var target: backend.findWindow(targetId)
     readonly property bool available: shown && backend.connected && backend.workspaceState.enabled && (overviewButton || !!target)
-    readonly property real titleSlotWidth: buttonSize * 1.8
-    implicitWidth: shown ? (overviewButton ? buttonSize : titleSlotWidth + buttonSize * 3 + 4) : 0
+    readonly property int buttonSpacing: 2
+    // Title slot fits the title, up to six buttons wide (or the arc limit).
+    readonly property real titleLimit: titleMaxWidth >= 0 ? Math.min(titleMaxWidth, buttonSize * 6) : buttonSize * 6
+    // Fixed width (same as the button row): the panel never relayouts when the title changes.
+    readonly property real rowWidth: 3 * buttonSize + 2 * buttonSpacing
+    readonly property real titleSlotWidth: showTitle ? (split ? Math.min(titleLimit, rowWidth) : rowWidth) : 0
+    readonly property real buttonsOffset: titleSlotWidth + (showTitle && showButtons ? 2 * buttonSpacing : 0)
+    implicitWidth: !shown ? 0 : (overviewButton ? buttonSize
+        : buttonsOffset + (showButtons ? 3 * buttonSize + 2 * buttonSpacing : 0))
     implicitHeight: buttonSize
     visible: shown
 
-    FontMetrics { id: titleMetrics; font: Kirigami.Theme.smallFont }
+    FontMetrics { id: titleMetrics; font: Kirigami.Theme.defaultFont }
+    TextMetrics { id: fullTitle; font: titleMetrics.font; text: elidedTitle.text }
     TextMetrics {
         id: elidedTitle
         font: titleMetrics.font
         text: strip.target ? strip.target.title || strip.target.appId || "" : ""
         elide: Text.ElideRight
-        elideWidth: Math.max(0, strip.titleMaxWidth >= 0 ? Math.min(strip.titleSlotWidth - 8, strip.titleMaxWidth) : strip.titleSlotWidth - 8)
+        elideWidth: Math.max(0, strip.titleSlotWidth - 16)
     }
     TextMetrics { id: displayedTitle; font: titleMetrics.font; text: elidedTitle.elidedText }
     function titleGlyphs(text, totalWidth, height) {
@@ -51,7 +66,7 @@ Item {
         objectName: "window-title"
         width: strip.width
         height: strip.buttonSize
-        visible: !strip.overviewButton && strip.shown && !!strip.target
+        visible: strip.showTitle
         readonly property string title: elidedTitle.text
         Repeater {
             model: strip.titleGlyphs(displayedTitle.text, displayedTitle.advanceWidth, titleMetrics.height)
@@ -76,9 +91,9 @@ Item {
     Item {
         objectName: "window-actions"
         anchors.fill: parent
-        visible: strip.shown && !strip.overviewButton
+        visible: strip.showButtons
         Repeater {
-            model: [
+            model: !strip.showButtons ? [] : [
                 { icon: "window-minimize", label: qsTr("Minimize"), method: "Minimize" },
                 { icon: strip.split ? "view-restore" : (strip.target && strip.target.circular ? "view-fullscreen" : "draw-circle"),
                   label: strip.split ? qsTr("Leave split-screen") : qsTr("Switch square / circle"),
@@ -89,10 +104,11 @@ Item {
                 id: actionButton
                 required property var modelData
                 required property int index
-                readonly property var point: ControlGeometry.arcPoint(strip.titleSlotWidth + index * (strip.buttonSize + 2) + strip.buttonSize / 2, strip.width, strip.buttonSize, strip.arcRadius, strip.arcAtTop)
+                readonly property var point: ControlGeometry.arcPoint(strip.buttonsOffset + index * (strip.buttonSize + strip.buttonSpacing) + strip.buttonSize / 2, strip.width, strip.buttonSize, strip.arcRadius, strip.arcAtTop)
                 x: point.x - width / 2
                 y: point.y - height / 2
-                rotation: point.rotation
+                // Icons keep their on-screen orientation (a rotated "minimize" bar reads as an arrow).
+                rotation: -strip.screenRotation
                 flat: true
                 objectName: "action-" + modelData.method
                 width: strip.buttonSize

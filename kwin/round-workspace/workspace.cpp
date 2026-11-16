@@ -192,20 +192,37 @@ QRectF WorkspaceEffect::canvas() const { return m_output ? QRectF(m_output->geom
 QRectF WorkspaceEffect::sourceCanvas(Window *window) const {
     auto rect = canvas();
     if (window == m_splitLeft || window == m_splitRight) {
+        // Square-mode halves get an undistorted portrait rectangle at 1:1; round halves keep the half canvas.
+        const auto split = m_windows.constFind(window);
+        if (split != m_windows.constEnd() && !split->circular)
+            return splitRect(window == m_splitRight);
         rect.setWidth(rect.width() / 2);
         if (window == m_splitRight)
             rect.translate(rect.width(), 0);
+        return rect;
     }
+    // Square mode: the window gets exactly the largest visible square and is shown 1:1.
+    const auto it = m_windows.constFind(window);
+    if (it != m_windows.constEnd() && !it->circular)
+        return inscribed(rect);
     return rect;
 }
 void WorkspaceEffect::refitAll() {
     for (auto window : m_windows.keys())
         fit(window);
 }
+// Largest rectangle inside one half of the visible circle (one side on the diameter), minus a small gutter.
+QRectF WorkspaceEffect::splitRect(bool right) const {
+    const auto rect = canvas();
+    const double r = std::min(rect.width(), rect.height()) / 2, gutter = 3;
+    const double w = r / std::sqrt(2.) - gutter, h = r * std::sqrt(2.);
+    const double x = right ? rect.center().x() + gutter : rect.center().x() - gutter - w;
+    return {x, rect.center().y() - h / 2, w, h};
+}
 QRectF WorkspaceEffect::content() const {
     auto rect = canvas();
     const double d = std::min(rect.width(), rect.height());
-    const double margin = std::clamp(m_settings.value("Workspace/RimMargin", 64.).toDouble(), 0., d * .25);
+    const double margin = std::clamp(m_settings.value("Workspace/RimMargin", 54.).toDouble(), 0., d * .25);
     const double side = d - 2 * margin;
     return {rect.center().x() - side / 2, rect.center().y() - side / 2, side, side};
 }
@@ -316,7 +333,7 @@ void WorkspaceEffect::fit(Window *w, bool retry) {
     if (w->maximizeMode() != MaximizeRestore)
         w->setMaximize(false, false);
     w->setNoBorder(true);
-    if (QRectF(w->frameGeometry()) != sourceCanvas(w)) {
+    if (!canvasMatches(QRectF(w->frameGeometry()), sourceCanvas(w))) {
         m_pendingFit.insert(w);
         ++m_fitAttempts[w];
         w->moveResize(RectF(sourceCanvas(w)));
@@ -324,7 +341,7 @@ void WorkspaceEffect::fit(Window *w, bool retry) {
             if (window) {
                 m_pendingFit.remove(window);
                 if (m_enabled && m_windows.contains(window) && m_fitAttempts.value(window) < 3 &&
-                    QRectF(window->frameGeometry()) != sourceCanvas(window))
+                    !canvasMatches(QRectF(window->frameGeometry()), sourceCanvas(window)))
                     fit(window, true);
                 changed();
             }
@@ -417,12 +434,26 @@ std::optional<WorkspaceEffect::Presentation> WorkspaceEffect::presentation(Windo
         return std::nullopt;
     Presentation result{sourceCanvas(root), content(),
                         m_windows[root].circular ? Shape::Circle : Shape::Square};
-    if (root == m_splitLeft) {
-        result.shape = Shape::LeftHalf;
-        return result;
-    }
-    if (root == m_splitRight) {
-        result.shape = Shape::RightHalf;
+    // Clients may refuse the requested size (minimum width): show the real frame scaled to fit.
+    const auto fitFrame = [&result, root] {
+        const QRectF frame(root->frameGeometry());
+        if (frame.width() > result.destination.width() + 1 || frame.height() > result.destination.height() + 1) {
+            const double k = std::min(result.destination.width() / frame.width(),
+                                      result.destination.height() / frame.height());
+            QRectF fitted(0, 0, frame.width() * k, frame.height() * k);
+            fitted.moveCenter(result.destination.center());
+            result.source = frame;
+            result.destination = fitted;
+        }
+    };
+    if (root == m_splitLeft || root == m_splitRight) {
+        if (m_windows[root].circular) {
+            result.shape = root == m_splitLeft ? Shape::LeftHalf : Shape::RightHalf;
+        } else {
+            result.shape = Shape::Square;
+            result.destination = splitRect(root == m_splitRight);
+            fitFrame();
+        }
         return result;
     }
     if (m_overview) {
@@ -439,8 +470,10 @@ std::optional<WorkspaceEffect::Presentation> WorkspaceEffect::presentation(Windo
     }
     if (m_splitLeft || m_splitRight || root != active() || root->isMinimized())
         return std::nullopt;
-    if (result.shape == Shape::Square)
-        result.destination = inscribed(result.destination);
+    if (result.shape == Shape::Square) {
+        result.destination = inscribed(canvas());
+        fitFrame();
+    }
     return result;
 }
 void WorkspaceEffect::prePaintScreen(ScreenPrePaintData &data) {
@@ -693,7 +726,7 @@ QString WorkspaceEffect::StateJson() const {
                                        {"bufferGeometry", jsonRect(w->bufferGeometry())},
                                        {"noBorder", w->noBorder()},
                                        {"requestedGeometry", jsonRect(sourceCanvas(w))},
-                                       {"canvasAccepted", QRectF(w->frameGeometry()) == sourceCanvas(w)}});
+                                       {"canvasAccepted", canvasMatches(QRectF(w->frameGeometry()), sourceCanvas(w))}});
     QJsonArray transients;
     for (auto window : workspace()->stackingOrder()) {
         auto root = rootFor(window);

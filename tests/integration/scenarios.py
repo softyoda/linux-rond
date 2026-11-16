@@ -52,6 +52,9 @@ def input_event(action, *coords):
 def map_point(x, y, shape=1, window='A', global_source=False):
     s=state();w=next(w for w in s['windows'] if label(w)==window)
     source=w['sourceGeometry'];dest=s['content']
+    if not w['circular']:
+        shape=0
+        dest=w['requestedGeometry']
     if not global_source:
         x+=w['clientGeometry']['x'];y+=w['clientGeometry']['y']
     nx=2*(x-source['x'])/source['width']-1
@@ -142,7 +145,18 @@ try:
     wait_for(lambda s:all(w['canvasAccepted'] for w in s['windows'] if label(w) in ['A','B']))
     for name,shape,fraction in [('A',2,.25),('B',3,.75)]:
         rect=next(w['clientGeometry'] for w in state()['windows'] if label(w)==name)
-        assert abs(rect['width']*2-rect['height'])<1,rect
+        window=next(w for w in state()['windows'] if label(w)==name)
+        if window['circular']:
+            assert abs(rect['width']*2-rect['height'])<1,rect
+        else:
+            assert rect['height'] > rect['width'] > 0,rect
+            output=state()['output']
+            cx=output['x']+output['width']/2;cy=output['y']+output['height']/2
+            radius=min(output['width'],output['height'])/2
+            for x in [rect['x'],rect['x']+rect['width']]:
+                for y in [rect['y'],rect['y']+rect['height']]:
+                    assert (x-cx)**2+(y-cy)**2 <= (radius+1)**2,rect
+            assert rect['x'] >= cx,rect
         click_source(rect['width']/2,rect['height']/2,shape=shape,window=name)
         click_source(rect['width']*fraction,rect['height']*.58,shape=shape,window=name,action='touch')
     checks.append('drag to split and touch partner selection')

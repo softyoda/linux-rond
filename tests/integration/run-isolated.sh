@@ -113,6 +113,23 @@ if [[ -n $plugin ]]; then
     qdbus6 org.kde.KWin /Effects org.kde.kwin.Effects.loadEffect linux_rond_workspace
     qdbus6 org.kde.KWin /LinuxRond org.softyoda.LinuxRond.SetEnabled true
     if [[ ${LINUX_ROND_PLASMA:-0} == 1 ]]; then sleep 3; else sleep .5; fi
+    if [[ ${LINUX_ROND_PANEL_RECOVERY:-0} == 1 && ${LINUX_ROND_PLASMA:-0} == 1 ]]; then
+        qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript \
+            'panels().filter(p => p.type === "org.softyoda.arcpanel").forEach(p => { p.height = 32; p.floating = true; p.lengthMode = "fit"; });' >/dev/null
+        qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "$(cat "$source_root/plasma/round-workspace-controls/configure.js")" >/dev/null
+        qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript \
+            'print(JSON.stringify(panels().filter(p => p.type === "org.softyoda.arcpanel").map(p => ({location:p.location,height:p.height,floating:p.floating,lengthMode:p.lengthMode}))));' > "$run/panel-recovery.json"
+        python3 - "$run/panel-recovery.json" <<'PYTHON'
+import json, sys
+panels = json.load(open(sys.argv[1]))
+assert {p['location'] for p in panels} == {'top', 'bottom'}, panels
+for panel in panels:
+    assert panel['height'] >= (560 if panel['location'] == 'top' else 120), panel
+    assert not panel['floating'] and panel['lengthMode'] == 'fill', panel
+print('Collapsed panel views recovered.')
+PYTHON
+        sleep 1
+    fi
     qdbus6 org.kde.KWin /LinuxRond org.softyoda.LinuxRond.StateJson > "$run/state.json"
 fi
 if [[ -n $plugin ]]; then

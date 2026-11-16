@@ -86,6 +86,7 @@ class WorkspaceEffect final : public KWin::OffscreenEffect {
     QRectF sourceCanvas(KWin::Window *) const;
     void refitAll();
     QRectF content() const;
+    QRectF splitRect(bool right) const;
     std::optional<Presentation> presentation(KWin::Window *) const;
     std::optional<InputTarget> hitTest(QPointF) const;
     std::optional<QPointF> mapToSource(KWin::Window *, QPointF, bool clamp = true) const;

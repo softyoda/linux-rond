@@ -9,6 +9,15 @@
 #include <stdexcept>
 
 namespace LinuxRond {
+bool canvasMatches(const QRectF &actual, const QRectF &requested) {
+    // Clients quantize fractional logical geometry to pixel boundaries.
+    return actual.isValid() && requested.isValid()
+        && std::abs(actual.x() - requested.x()) <= 1
+        && std::abs(actual.y() - requested.y()) <= 1
+        && std::abs(actual.width() - requested.width()) <= 1
+        && std::abs(actual.height() - requested.height()) <= 1;
+}
+
 namespace {
 double cross(QPointF a, QPointF b) { return a.x() * b.y() - a.y() * b.x(); }
 double dot(QPointF a, QPointF b) { return a.x() * b.x() + a.y() * b.y(); }

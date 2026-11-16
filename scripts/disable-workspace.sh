@@ -29,6 +29,15 @@ qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "$(ca
 systemctl --user stop plasma-plasmashell.service
 trap 'systemctl --user start plasma-plasmashell.service' EXIT
 python3 "$script_dir/workspace-backup.py" restore "$backup" "$workspace_data"
+# Restore each arc panel's original visibility mode recorded at activation.
+for id in $(kreadconfig6 --file linux-rondrc --group PanelVisibility --key __keys__ 2>/dev/null; \
+            sed -n '/^\[PanelVisibility\]/,/^\[/{s/^\([0-9][0-9]*\)=.*/\1/p}' "${XDG_CONFIG_HOME:-$HOME/.config}/linux-rondrc"); do
+    [[ $id =~ ^[0-9]+$ ]] || continue
+    kwriteconfig6 --file plasmashellrc --group PlasmaViews --group "Panel $id" --key panelVisibility \
+        "$(kreadconfig6 --file linux-rondrc --group PanelVisibility --key "$id" --default 0)"
+done
+kwriteconfig6 --file linux-rondrc --group PanelVisibility --delete-group 2>/dev/null || \
+    sed -i '/^\[PanelVisibility\]/,/^\[/{/^\[PanelVisibility\]/d;/^[0-9]/d}' "${XDG_CONFIG_HOME:-$HOME/.config}/linux-rondrc"
 systemctl --user start plasma-plasmashell.service
 trap - EXIT
 mv "$backup" "$workspace_root/rollback-restored-$(date +%s)"

@@ -9,14 +9,9 @@ import org.kde.plasma.core as PlasmaCore
 PlasmoidItem {
     id: root
     readonly property string controlRole: Plasmoid.configuration.role
-    readonly property bool split: !!workspaceBus.workspaceState.splitLeftId && !!workspaceBus.workspaceState.splitRightId
-    readonly property string targetId: split
-        ? (controlRole === "left" ? workspaceBus.workspaceState.splitLeftId : workspaceBus.workspaceState.splitRightId)
-        : (controlRole === "left" ? "" : workspaceBus.workspaceState.activeId || "")
-    readonly property var targetWindow: workspaceBus.findWindow(targetId)
-    readonly property bool groupVisible: controlRole === "overview" || (workspaceBus.workspaceState.enabled && !workspaceBus.workspaceState.overview && !!targetWindow && !targetWindow.minimized && (controlRole !== "left" || split))
     readonly property int buttonSize: Plasmoid.configuration.buttonSize
-    readonly property int groupWidth: groupVisible ? (controlRole === "overview" ? buttonSize : Math.round(buttonSize * 4.8 + 4)) : 0
+    // The compact strip computes its own width (title and/or buttons).
+    readonly property int groupWidth: compactRepresentationItem ? Math.round(compactRepresentationItem.implicitWidth) : 0
     Layout.minimumWidth: groupWidth
     Layout.preferredWidth: groupWidth
     Layout.minimumHeight: buttonSize

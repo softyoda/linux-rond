@@ -82,9 +82,23 @@ class WorkspaceScripts(unittest.TestCase):
         self.assertFalse((self.root/'data/plasma/plasmoids/org.softyoda.roundworkspacecontrols').exists())
         state=json.loads((self.root/'state.json').read_text())
         self.assertEqual(state['safeValue'],'true');self.assertTrue(state['safeLoaded']);self.assertFalse(state['loaded'])
+    def test_resume_reconciles_panel_views(self):
+        self.run_script('install-workspace.sh','--enable')
+        (self.root/'trace.jsonl').write_text('')
+        self.run_script('load-workspace.sh','--resume')
+        entries=self.trace()
+        configure=next(i for i,e in enumerate(entries) if e[0]=='qdbus6'
+                       and e[3].endswith('.evaluateScript') and 'minimumHeight' in e[-1])
+        enable=next(i for i,e in enumerate(entries) if e[0]=='qdbus6'
+                    and e[3].endswith('.SetEnabled') and e[-1]=='true')
+        self.assertLess(configure,enable)
+        self.assertFalse(any(e[0]=='kpackagetool6' for e in entries))
+
     def test_failed_load_restores_previous_state(self):
         result=self.run_script('install-workspace.sh','--enable',check=False,MOCK_LOAD_FAIL='1')
         self.assertNotEqual(result.returncode,0)
+        self.assertTrue(any(entry[0] == 'qdbus6' and entry[3].endswith('.loadEffect')
+                            for entry in self.trace()))
         state=json.loads((self.root/'state.json').read_text())
         self.assertEqual(state['safeValue'],'true');self.assertTrue(state['safeLoaded'])
         self.assertTrue((self.root/'data/plasma/plasmoids/org.softyoda.arcpanel/original').exists())

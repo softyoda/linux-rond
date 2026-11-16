@@ -14,6 +14,13 @@ void check(bool condition) {
 }
 int main(int argc, char **argv) {
     QCoreApplication app(argc, argv);
+    const QRectF requested(105.44155877, 105.44155877, 509.11688245, 509.11688245);
+    check(canvasMatches(requested, requested));
+    check(canvasMatches(QRectF(105, 105, 509, 509), requested));
+    check(canvasMatches(QRectF(105.44155877, 105.44155877, 509.33333333, 509.33333333), requested));
+    check(!canvasMatches(QRectF(105, 105, 600, 550), requested));
+    check(!canvasMatches(requested.translated(2, 0), requested));
+    check(!canvasMatches(QRectF(), requested));
     QFile file(":/linux-rond/approved-mesh.json");
     check(file.open(QIODevice::ReadOnly));
     const auto json = file.readAll();

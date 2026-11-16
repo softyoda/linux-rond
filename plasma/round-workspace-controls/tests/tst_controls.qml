@@ -34,7 +34,9 @@ Item {
             wait(20);
         }
         function test_normalControls() {
-            compare(left.implicitWidth, 0);
+            verify(left.implicitWidth >= 120);
+            verify(findChild(left, "window-title").visible);
+            verify(!findChild(right, "window-title").visible);
             verify(right.implicitWidth >= 120);
             compare(right.targetId, "one");
             mouseClick(findChild(right, "action-Minimize"));
@@ -96,9 +98,9 @@ Item {
         }
         function test_hostCannotRevealHiddenActions() {
             left.visible = true;
-            verify(!left.shown);
+            verify(left.shown);
             verify(!findChild(left, "window-actions").visible);
-            verify(!findChild(left, "action-Close").enabled);
+            compare(findChild(left, "action-Close"), null);
             backend.workspaceState = { enabled: true, overview: true, activeId: "one", splitLeftId: "", splitRightId: "", windows: [] };
             right.visible = true;
             verify(!findChild(right, "window-actions").visible);
@@ -109,7 +111,7 @@ Item {
             compare(right.implicitWidth, 0);
             wait(30);
             backend.workspaceState = { enabled: true, overview: false, activeId: "one", splitLeftId: "", splitRightId: "", windows: [] };
-            tryCompare(right, "implicitWidth", 196);
+            tryCompare(right, "implicitWidth", 124);
             verify(right.visible);
             compare(right.targetId, "one");
         }
@@ -122,7 +124,7 @@ Item {
             verify(!findChild(right, "window-actions").visible);
         }
         function test_title() {
-            const title = findChild(right, "window-title");
+            const title = findChild(left, "window-title");
             verify(title.visible);
             compare(title.title, "one");
             compare(right.arcRadius, 332);
