@@ -8,6 +8,7 @@ import org.kde.kirigami as Kirigami
 import org.kde.taskmanager as TaskManager
 import org.kde.plasma.extras as PlasmaExtras
 import "ArcGeometry.js" as ArcGeometry
+import "TaskActions.js" as TaskActions
 
 ContainmentItem {
     id: root
@@ -422,7 +423,11 @@ ContainmentItem {
                     if (event.button === Qt.RightButton) { task.openMenu(); return; }
                     const idx = tasksModel.makeModelIndex(task.index);
                     if (event.button === Qt.MiddleButton) tasksModel.requestNewInstance(idx);
-                    else if (task.model.IsActive) tasksModel.requestToggleMinimized(idx);
+                    else if (root.workspaceBackend && TaskActions.action(task.model.WinIdList, root.workspaceBackend.workspaceState)) {
+                        const action = TaskActions.action(task.model.WinIdList, root.workspaceBackend.workspaceState);
+                        root.workspaceBackend.call(action.method, action.args);
+                    }
+                    else if (task.model.IsActive && !task.model.IsMinimized) tasksModel.requestToggleMinimized(idx);
                     else tasksModel.requestActivate(idx);
                 }
             }

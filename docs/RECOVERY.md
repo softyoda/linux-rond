@@ -103,3 +103,29 @@ repository. No private desktop image is published as validation evidence.
 User feedback requested: launcher and square/circle button touch usability, and whether
 the dock obscures content. Circular text distortion, real-app compatibility, and recovery
 after an actual display hotplug/cold login remain pending.
+
+## November 17 follow-up
+
+The user still rejects the overall experience: missing top drag and circular system sheets,
+wallpaper misalignment, and inaccessible transcoding controls. The existing control window
+was found minimized and restored without launching or stopping any transcoding operation.
+Multiple Python windows share a task group. A new task action helper opens overview for
+multiple managed windows; a single minimized window calls `Activate`, even if the reported
+active ID is stale. Source tests cover those cases. Other task providers retain their fallback.
+
+Panel setup now uses `hiding = "windowsgobelow"` and journals its previous mode. It replaces
+manual configuration writes that were not reapplied on resume. The [Plasma scripting
+implementation](https://raw.githubusercontent.com/KDE/plasma-workspace/master/shell/scripting/panel.cpp)
+accepts that value but its getter can report `none`; this was reproduced on the target.
+The isolated configuration file confirms `panelVisibility=3`. Rollback accommodates the
+getter behavior; a manual change to `none` cannot be distinguished through that getter.
+
+Checks: eight Python tests, JavaScript suites including task dispatch, isolated Plasma
+at 1080 × 1080 / 150%, synthetic mouse/touch, and three native CTest cases passed. The
+new release was deployed through the versioned installer. A private screenshot confirms
+the control window is visible; physical task selection remains pending. No new claim is
+made about the 34-check compositor suite, which passed in the previous recovery step.
+
+The wallpaper uses the installed blur plugin; no wallpaper replacement or crop adjustment
+was made without identifying which alignment the user means. Gestures and circular sheets
+remain implementation work, not installed functionality.

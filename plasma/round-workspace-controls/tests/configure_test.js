@@ -16,7 +16,7 @@ function settings(object) {
 function panel(type, location) {
     const widgets = [];
     return settings({
-        type, location, height: 120, floating: true, lengthMode: "fit", id: nextId++, screen: 0,
+        type, location, height: 120, floating: true, hiding: "none", lengthMode: "fit", id: nextId++, screen: 0,
         widgets: () => widgets.slice(),
         addWidget(type) {
             if (typeof type !== "string") {
@@ -50,6 +50,7 @@ assert.equal(bottom.widgets().length, 1);
 assert.equal(other.widgets().length, 0);
 assert.equal(top.height, 560);
 assert.equal(top.floating, false);
+assert.equal(top.hiding, "windowsgobelow");
 assert.equal(top.lengthMode, "fill");
 top.height = 160;
 top.currentConfigGroup = ["LinuxRondWorkspace"];
@@ -70,6 +71,7 @@ assert.deepEqual(top.widgets(), [preexisting]);
 assert.deepEqual(bottom.widgets(), [notification]);
 assert.equal(top.height, 120);
 assert.equal(top.floating, true);
+assert.equal(top.hiding, "none");
 assert.equal(top.lengthMode, "fit");
 assert.equal(bottom.config["General/tasksIndex"], 3);
 vm.runInContext(configure, context);

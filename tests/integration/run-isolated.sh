@@ -118,7 +118,7 @@ if [[ -n $plugin ]]; then
             'panels().filter(p => p.type === "org.softyoda.arcpanel").forEach(p => { p.height = 32; p.floating = true; p.lengthMode = "fit"; });' >/dev/null
         qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "$(cat "$source_root/plasma/round-workspace-controls/configure.js")" >/dev/null
         qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript \
-            'print(JSON.stringify(panels().filter(p => p.type === "org.softyoda.arcpanel").map(p => ({location:p.location,height:p.height,floating:p.floating,lengthMode:p.lengthMode}))));' > "$run/panel-recovery.json"
+            'print(JSON.stringify(panels().filter(p => p.type === "org.softyoda.arcpanel").map(p => ({location:p.location,height:p.height,floating:p.floating,lengthMode:p.lengthMode,hiding:p.hiding}))));' > "$run/panel-recovery.json"
         python3 - "$run/panel-recovery.json" <<'PYTHON'
 import json, sys
 panels = json.load(open(sys.argv[1]))

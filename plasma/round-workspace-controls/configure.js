@@ -38,6 +38,9 @@ arcs.forEach(function(panel) {
         panel.writeConfig("originalFloating", panel.floating);
         panel.writeConfig("originalLengthMode", panel.lengthMode);
     }
+    if (panel.readConfig("originalHiding", "__unset__") === "__unset__")
+        panel.writeConfig("originalHiding", panel.hiding);
+    panel.hiding = "windowsgobelow";
     panel.floating = false;
     panel.lengthMode = "fill";
     // Plasma may recreate panel views with its 32 px defaults after a display change.

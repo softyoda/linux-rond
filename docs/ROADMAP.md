@@ -1,6 +1,6 @@
 # Roadmap
 
-Status as of November 16, 2026. **The framework is an unfinished prototype.**
+Status as of November 17, 2026. **The framework is an unfinished prototype.**
 The user reports that the installed experience is unusable and poorly legible. The
 October interaction approvals below do not constitute acceptance of the current UI.
 Read-only inspection confirms an active native workspace on the separate circular-display
@@ -25,6 +25,17 @@ target (KWin 6.8.1). Physical behavior has not been re-verified.
 Native rendering/input mapping, saved modes, overview, split, and rollback code exist.
 Historical isolated probe tests are recorded in [VALIDATION.md](VALIDATION.md).
 The unchecked tasks below are acceptance gates, **not a list of entirely missing code**.
+
+## November 17 user feedback
+
+- Transcoding controls could not be reopened from grouped tasks. The existing window
+  was restored; grouped managed tasks now open overview for explicit selection, and
+  single minimized tasks use the workspace activation API. Deployed; physical review pending.
+- Panel visibility is now set through Plasma scripting on activation/resume, replacing
+  direct configuration writes. Isolated scaled recovery and persisted mode were checked.
+- Wallpaper alignment remains unresolved; the target uses a separate blur wallpaper plugin.
+- Top-edge/clock dragging and circular launcher, notifications, audio, and calendar sheets
+  are still missing. Restored panels do not satisfy those feature requests.
 
 ## Recovery priorities
 

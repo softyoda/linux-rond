@@ -9,6 +9,9 @@ panels().filter(function(panel) { return panel.type === "org.softyoda.arcpanel";
     var originalHeight = Number(panel.readConfig("originalHeight", panel.height));
     var appliedHeight = Number(panel.readConfig("appliedHeight", panel.height));
     var originalTasksIndex = panel.readConfig("originalTasksIndex", 1);
+    var originalHiding = panel.readConfig("originalHiding", "__unset__");
+    if (originalHiding !== "__unset__" && (panel.hiding === "windowsgobelow" || panel.hiding === "none"))
+        panel.hiding = originalHiding;
     var originalFloating = panel.readConfig("originalFloating", "__unset__");
     var originalLengthMode = panel.readConfig("originalLengthMode", "__unset__");
     if (originalFloating !== "__unset__" && panel.floating === false)
@@ -36,6 +39,7 @@ panels().filter(function(panel) { return panel.type === "org.softyoda.arcpanel";
         if (Number(panel.readConfig("tasksIndex", 1)) === 2) panel.writeConfig("tasksIndex", originalTasksIndex);
     }
     panel.currentConfigGroup = ["LinuxRondWorkspace"];
+    panel.writeConfig("originalHiding", "__unset__");
     panel.writeConfig("originalFloating", "__unset__");
     panel.writeConfig("originalLengthMode", "__unset__");
     panel.writeConfig("active", false);

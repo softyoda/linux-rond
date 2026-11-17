@@ -1,0 +1,15 @@
+const fs = require("node:fs");
+const vm = require("node:vm");
+const assert = require("node:assert/strict");
+const path = require("node:path");
+const context = vm.createContext({});
+vm.runInContext(fs.readFileSync(path.join(__dirname, "../plasma/org.softyoda.arcpanel/contents/ui/TaskActions.js"), "utf8").replace(/^\.pragma library\s*/, ""), context);
+const state = {enabled:true, activeId:"one", windows:[{id:"one",minimized:true},{id:"two",minimized:true}]};
+assert.equal(context.action(["{one}"], state).method, "Activate");
+state.windows[0].minimized = false;
+assert.equal(context.action(["{one}"], state).method, "Minimize");
+assert.equal(context.action(["{one}", "{two}"], state).method, "ToggleOverview");
+assert.equal(context.action(["unknown"], state), null);
+state.enabled = false;
+assert.equal(context.action(["one"], state), null);
+console.log("Minimized and grouped task activation tests passed");
